@@ -63,12 +63,21 @@ td.nom-cell{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--
 .pan-head h2{font-size:18px;font-weight:700}.pan-head .sub{opacity:.7;font-size:13px;margin-top:4px}
 .pan-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
 .pan-close:hover{background:rgba(255,255,255,.25)}
-.pan-body{padding:20px}
+.pan-body{padding:20px 20px 96px}
 .sec{margin-bottom:18px}.sec h3{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-20);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--gray-05)}
 .row{display:flex;justify-content:space-between;padding:5px 0}.row .rl{font-size:13px;color:var(--gray-40)}.row .rv{font-size:13px;font-weight:600;text-align:right;max-width:280px;word-break:break-word}
 .row .rv a{color:var(--blue);text-decoration:none}
 .note-box{background:var(--gray-05);padding:10px 14px;border-radius:var(--radius);font-size:13px;color:var(--gray-40);line-height:1.5;white-space:pre-wrap}
 .acts{display:flex;gap:8px;margin-top:14px}.acts .btn{flex:1;text-align:center;padding:9px}
+.pan-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pan-field{display:flex;flex-direction:column;gap:5px}
+.pan-field.full{grid-column:1/-1}
+.pan-field label{font-size:11px;font-weight:700;color:var(--gray-40);text-transform:uppercase;letter-spacing:.3px}
+.pan-field input,.pan-field select,.pan-field textarea{width:100%;padding:9px 12px;border:1px solid var(--gray-10);border-radius:var(--radius);font-size:13px;font-family:inherit;background:#fff}
+.pan-field textarea{min-height:96px;resize:vertical}
+.pan-field input:focus,.pan-field select:focus,.pan-field textarea:focus{outline:none;border-color:var(--blue)}
+.pan-actions-sticky{position:sticky;bottom:0;display:flex;gap:8px;padding:14px 20px 20px;background:linear-gradient(to top,#fff 75%,rgba(255,255,255,.92));border-top:1px solid var(--gray-05);margin:0 -20px -20px}
+.pan-actions-sticky .btn{flex:1;padding:11px 14px}
 .pag{display:flex;justify-content:center;gap:4px;padding:16px}
 .pag button{width:34px;height:34px;border-radius:var(--radius);border:1px solid var(--gray-10);background:#fff;font-size:12px;font-weight:600;cursor:pointer}
 .pag button:hover{border-color:var(--blue);color:var(--blue)}.pag button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
@@ -117,7 +126,11 @@ td.nom-cell{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--
 .ca-add-field input{padding:8px 12px;border:1px solid var(--gray-10);border-radius:var(--radius);font-size:13px}
 .ca-add-field input:focus{outline:none;border-color:var(--blue)}
 .ca-add-footer{padding:16px 24px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--gray-05)}
-@media(max-width:768px){.ca-chart-row{grid-template-columns:1fr}.ca-add-body{grid-template-columns:1fr}}
+.ca-commission-box{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:var(--radius);padding:10px 12px;box-shadow:var(--shadow)}
+.ca-commission-box label{font-size:11px;font-weight:700;color:var(--gray-40);text-transform:uppercase;letter-spacing:.3px}
+.ca-commission-box input{width:90px;padding:8px 10px;border:1px solid var(--gray-10);border-radius:var(--radius);font-size:13px}
+.ca-commission-box input:focus{outline:none;border-color:var(--blue)}
+@media(max-width:768px){.ca-chart-row{grid-template-columns:1fr}.ca-add-body{grid-template-columns:1fr}.ca-commission-box{width:100%;justify-content:space-between}}
 
 /* ========= WEEKLY TOUR PLANNER ========= */
 .tour-config{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:16px}
@@ -259,7 +272,7 @@ input,select,textarea{font-size:16px!important}
 .save-indicator{position:fixed;bottom:12px;right:12px;background:var(--green);color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:opacity .3s;z-index:999;pointer-events:none}
 .save-indicator.show{opacity:1}
 @media print{.nav,.tour-config,.tour-actions,.tour-week-nav,.di-actions,.qe-overlay,.day-search,.pool-add-btns,.di-remove,.cal-toast,.save-indicator{display:none!important}body{background:#fff}.tour-grid{display:block}.day-card{page-break-inside:avoid}}
-@media(max-width:768px){.toolbar{flex-direction:column}.search{width:100%}.tour-summary{grid-template-columns:repeat(3,1fr)}.tour-days-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.toolbar{flex-direction:column}.search{width:100%}.tour-summary{grid-template-columns:repeat(3,1fr)}.tour-days-grid{grid-template-columns:1fr}.pan-head{padding:18px 20px 22px}.pan-close{width:42px;height:42px;font-size:20px;top:12px;right:12px}.pan-body{padding:16px 16px 92px}.pan-edit-grid{grid-template-columns:1fr}.pan-actions-sticky{padding:12px 16px calc(16px + env(safe-area-inset-bottom));margin:0 -16px -16px}.acts{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -288,6 +301,7 @@ input,select,textarea{font-size:16px!important}
 <div class="nav-tab" onclick="switchTab('tour')">Tourn&eacute;es</div>
 <div class="nav-tab" id="nav-ca" onclick="switchTab('ca')">Chiffre d'Affaires</div>
 <div class="nav-tab hidden-tab" id="nav-admin" onclick="switchTab('admin')">Admin</div>
+<a class="nav-tab" href="proforma.html" style="text-decoration:none;color:inherit" title="&Eacute;diteur de Proforma">Proforma</a>
 </div>
 <div class="nav-right">
 <div class="nav-badge" id="nav-badge">Secteur MBO</div>
@@ -311,6 +325,7 @@ input,select,textarea{font-size:16px!important}
 <span id="fa-wrap"><select class="sel" id="fa" onchange="af()"><option value="">Agent</option><option value="ARA">ARA</option><option value="BAS">BAS</option><option value="BBO">BBO</option><option value="BCH">BCH</option><option value="BRE">BRE</option><option value="BRU">BRU</option><option value="CAG">CAG</option><option value="CBI">CBI</option><option value="CJA">CJA</option><option value="CQU">CQU</option><option value="CSA">CSA</option><option value="DCA">DCA</option><option value="DES">DES</option><option value="FCA">FCA</option><option value="FET">FET</option><option value="FLA">FLA</option><option value="FLE">FLE</option><option value="FVI">FVI</option><option value="GPI">GPI</option><option value="GSA">GSA</option><option value="JBF">JBF</option><option value="JMA">JMA</option><option value="JMO">JMO</option><option value="JWI">JWI</option><option value="KDU">KDU</option><option value="LAM">LAM</option><option value="LCB">LCB</option><option value="LVS">LVS</option><option value="MAC">MAC</option><option value="MBO">MBO</option><option value="MBO (ex-JBF)">MBO (ex-JBF)</option><option value="MJU">MJU</option><option value="MPA">MPA</option><option value="MPE">MPE</option><option value="MRE">MRE</option><option value="NBE">NBE</option><option value="PCR">PCR</option><option value="PMA">PMA</option><option value="PSE">PSE</option><option value="RLE">RLE</option><option value="TMO">TMO</option><option value="TPL">TPL</option><option value="VBO">VBO</option><option value="YCE">YCE</option><option value="YDI">YDI</option></select></span>
 <select class="sel" id="fs" onchange="af()"><option value="">Source</option><option value="VCF">VCF</option><option value="CRM">CRM</option><option value="MULTI">Multi</option></select>
 <div class="chips" id="chs"></div>
+<button class="btn btn-blue" onclick="openNewClientPanel()">+ Ajouter un client</button>
 <span class="reset-link" onclick="resetF()">Reset</span>
 </div>
 <div class="info-bar"><span id="rc"></span><span id="caf"></span></div>
@@ -371,6 +386,7 @@ input,select,textarea{font-size:16px!important}
 <select class="sel" id="ca-period" onchange="renderCA()"><option value="all">Toutes p&eacute;riodes</option><option value="month">Ce mois</option><option value="quarter">Ce trimestre</option><option value="year">Cette ann&eacute;e</option></select>
 <select class="sel" id="ca-client-filter" onchange="renderCA()"><option value="">Tous les clients</option></select>
 <input type="text" class="search" id="ca-search" placeholder="Rechercher commande / client..." oninput="renderCA()">
+<div class="ca-commission-box"><label>Commission HDHT %</label><input type="number" id="ca-commission-rate" min="0" step="0.1" value="4" onchange="updateCommissionRate()"></div>
 <button class="btn btn-blue" onclick="openCAAdd()">&#10010; Ajouter</button>
 <button class="btn btn-ghost" onclick="exportCACSV()">&#128196; Export CSV</button>
 </div>
@@ -396,8 +412,6 @@ input,select,textarea{font-size:16px!important}
 <tfoot id="ca-tfoot"></tfoot>
 </table>
 </div>
-</div>
-
 <!-- CA Add Modal -->
 <div class="ca-add-modal-overlay" id="ca-add-ov" onclick="closeCAAdd(event)">
 <div class="ca-add-modal" onclick="event.stopPropagation()">
@@ -492,7 +506,7 @@ document.getElementById('nav-agent-code').textContent=currentAgent||'FSD';
 if(isAdminRole()){document.getElementById('nav-badge').textContent='Admin — '+currentAgent}
 else if(currentRole==='manager'){document.getElementById('nav-badge').textContent='Manager — '+currentAgent}
 else{document.getElementById('nav-badge').textContent='Secteur '+currentAgent}
-document.getElementById('nav-ca').classList.toggle('hidden-tab',!canSeeAll());
+document.getElementById('nav-ca').classList.toggle('hidden-tab',!isAdminRole());
 document.getElementById('nav-admin').classList.toggle('hidden-tab',!isAdminRole());
 document.getElementById('fa-wrap').style.display=canSeeAll()?'':'none';
 document.getElementById('th-ca').style.display=canSeeAll()?'':'none';
@@ -514,20 +528,130 @@ function renderPg(){const tp=Math.ceil(F.length/PS),p=document.getElementById('p
 function gp(p){cp=p;render();window.scrollTo({top:200,behavior:'smooth'})}
 function uk(){document.getElementById('k-a').textContent=F.filter(c=>c.ca>0).length;document.getElementById('k-top').textContent=F.filter(c=>c.ca>5000).length;document.getElementById('k-m').textContent=canSeeAll()?D.length:F.filter(c=>currentAgentCodes.includes(c.agent)).length;document.getElementById('k-v').textContent=F.filter(c=>c.src.includes('VCF')).length}
 
-function openP(i){const c=F[i];if(!c)return;const m=CM[c.classif]||{l:c.classif,c:''};
-document.getElementById('dn').textContent=c.nom;
-document.getElementById('ds').innerHTML='<span class="bdg '+m.c+'">'+m.l+'</span>'+(c.mbo?' <span class="bdg bdg-mbo">MBO</span>':'')+(c.src.includes('VCF')?' <span class="bdg bdg-vcf">VCF</span>':'')+' &mdash; '+esc(c.ville||'')+' ('+c.dept+') &bull; Score: <b>'+c.score+'</b>';
-let h='<div class="sec"><h3>Contact</h3>'+rw('G\u00e9rant',c.contact)+rw('T\u00e9l',c.tel)+rw('Portable',c.port)+rw('Email',c.email?'<a href="mailto:'+c.email+'">'+c.email+'</a>':'')+'</div>';
-h+='<div class="sec"><h3>Localisation</h3>'+rw('Adresse',c.adresse)+rw('CP',c.cp)+rw('Ville',c.ville)+rw('D\u00e9pt',c.dept)+rw('R\u00e9gion',c.region)+rw('Dist. Villeneuve',c.distVDA<9000?c.distVDA+' km':'-')+rw('Dist. H\u00e9rouville',c.distHSC<9000?c.distHSC+' km':'-')+'</div>';
-h+='<div class="sec"><h3>Commercial</h3>'+(canSeeAll()?rw('CA',c.ca>0?c.ca.toLocaleString('fr-FR')+' \u20ac':'-'):'')+rw('Type',c.type)+rw('Priorit\u00e9',c.prio)+rw('Agent',c.agent)+rw('Commande',c.cmd)+rw('Relance',c.relance)+rw('Source',c.src)+'</div>';
+function recalcClientScore(c){
+let sc=0;
+const ca=c.ca||0;
+if(ca>=10000)sc+=40;else if(ca>=5000)sc+=30;else if(ca>=2000)sc+=20;else if(ca>=500)sc+=10;else if(ca>0)sc+=5;
+const clMap={TOP:30,ACTIF:20,CLIENT:20,PROSPECT:10,AGENT:5,INACTIF:0};
+sc+=(clMap[c.classif]||0);
+const dist=Math.min(c.distVDA||9999,c.distHSC||9999);
+if(dist<50)sc+=25;else if(dist<100)sc+=20;else if(dist<150)sc+=15;else if(dist<200)sc+=10;else if(dist<300)sc+=5;
+if(c.tel||c.port)sc+=2;
+if(c.email)sc+=2;
+if(c.adresse)sc+=2;
+return Math.min(101,sc);
+}
+function panelInput(label,id,value,type,extraClass){
+if(type==='textarea')return '<div class="pan-field '+(extraClass||'')+'"><label>'+label+'</label><textarea id="'+id+'">'+esc(value||'')+'</textarea></div>';
+return '<div class="pan-field '+(extraClass||'')+'"><label>'+label+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(value||'')+'"></div>';
+}
+function panelSelect(label,id,value,options,extraClass){
+return '<div class="pan-field '+(extraClass||'')+'"><label>'+label+'</label><select id="'+id+'">'+options.map(function(opt){return '<option value="'+esc(opt.value)+'"'+(String(opt.value)===String(value)?' selected':'')+'>'+esc(opt.label)+'</option>'}).join('')+'</select></div>';
+}
+function renderPanel(){
+const c=panelIsNew?panelDraftClient:D.find(x=>x.id===panelClientId);
+if(!c)return;
+const m=CM[c.classif]||{l:c.classif,c:''};
+document.getElementById('dn').textContent=c.nom||'Nouveau client';
+document.getElementById('ds').innerHTML='<span class="bdg '+m.c+'">'+m.l+'</span>'+(c.mbo?' <span class="bdg bdg-mbo">MBO</span>':'')+((c.src||'').includes('VCF')?' <span class="bdg bdg-vcf">VCF</span>':'')+' &mdash; '+esc(c.ville||'')+' ('+c.dept+') &bull; Score: <b>'+c.score+'</b>';
+let h='';
+if(panelEditMode){
+const classifOptions=[{value:'TOP',label:'Top'},{value:'ACTIF',label:'Actif'},{value:'CLIENT',label:'Client'},{value:'PROSPECT',label:'Prospect'},{value:'AGENT',label:'Agent'},{value:'INACTIF',label:'Inactif'}];
+const prioOptions=[{value:'',label:'-'},{value:'1',label:'1 - Haute'},{value:'2',label:'2 - Moyenne'},{value:'3',label:'3 - Basse'}];
+h+='<div class="sec"><h3>Modifier la fiche</h3><div class="pan-edit-grid">';
+h+=panelInput('Nom','pf-nom',c.nom,'text','full');
+h+=panelInput('Contact','pf-contact',c.contact,'text','');
+h+=panelInput('Type','pf-type',c.type,'text','');
+h+=panelSelect('Classification','pf-classif',c.classif,classifOptions,'');
+h+=panelSelect('Priorite','pf-prio',c.prio||'',prioOptions,'');
+if(canSeeAll())h+=panelInput('Agent','pf-agent',c.agent,'text','');
+h+=panelInput('Telephone','pf-tel',c.tel,'text','');
+h+=panelInput('Portable','pf-port',c.port,'text','');
+h+=panelInput('Email','pf-email',c.email,'email','full');
+h+=panelInput('Adresse','pf-adresse',c.adresse,'text','full');
+h+=panelInput('Code postal','pf-cp',c.cp,'text','');
+h+=panelInput('Ville','pf-ville',c.ville,'text','');
+h+=panelInput('Departement','pf-dept',c.dept,'text','');
+h+=panelInput('Region','pf-region',c.region,'text','');
+h+=panelInput('Commande','pf-cmd',c.cmd,'date','');
+h+=panelInput('Relance','pf-relance',c.relance,'date','');
+h+=panelInput('Source','pf-src',c.src,'text','');
+h+=panelInput('Numero client','pf-nclt',c.n_clt,'text','');
+h+=panelInput('CA','pf-ca',c.ca||0,'number','');
+h+=panelInput('Factures','pf-factures',c.nb_factures||0,'number','');
+h+=panelInput('Distance Villeneuve','pf-distvda',c.distVDA,'number','');
+h+=panelInput('Distance Herouville','pf-disthsc',c.distHSC,'number','');
+h+=panelInput('Latitude','pf-lat',c.lat,'number','');
+h+=panelInput('Longitude','pf-lon',c.lon,'number','');
+h+=panelInput('Notes','pf-comment',c.comment,'textarea','full');
+h+='</div></div>';
+h+='<div class="pan-actions-sticky"><button class="btn btn-ghost" onclick="closeP()">Fermer</button><button class="btn btn-ghost" onclick="'+(panelIsNew?'closeP()':'setPanelEditMode(false)')+'">Annuler</button><button class="btn btn-blue" onclick="savePanelEdit()">'+(panelIsNew?'Ajouter':'Enregistrer')+'</button></div>';
+}else{
+h+='<div class="sec"><h3>Contact</h3>'+rw('Gerant',c.contact)+rw('Tel',c.tel)+rw('Portable',c.port)+rw('Email',c.email?'<a href="mailto:'+c.email+'">'+c.email+'</a>':'')+'</div>';
+h+='<div class="sec"><h3>Localisation</h3>'+rw('Adresse',c.adresse)+rw('CP',c.cp)+rw('Ville',c.ville)+rw('Dept',c.dept)+rw('Region',c.region)+rw('Dist. Villeneuve',c.distVDA<9000?c.distVDA+' km':'-')+rw('Dist. Herouville',c.distHSC<9000?c.distHSC+' km':'-')+'</div>';
+h+='<div class="sec"><h3>Commercial</h3>'+(canSeeAll()?rw('CA',c.ca>0?c.ca.toLocaleString('fr-FR')+' \u20ac':'-'):'')+rw('Type',c.type)+rw('Priorite',c.prio)+rw('Agent',c.agent)+rw('Commande',c.cmd)+rw('Relance',c.relance)+rw('Source',c.src)+'</div>';
 if(c.comment)h+='<div class="sec"><h3>Notes</h3><div class="note-box">'+esc(c.comment)+'</div></div>';
-h+='<div class="acts">';h+='<button class="btn btn-blue" onclick="closeP();openQE('+c.id+')">\u270E Modifier</button>';if(c.email)h+='<a href="mailto:'+c.email+'" class="btn btn-ghost" style="text-decoration:none">Email</a>';if(c.port||c.tel)h+='<a href="tel:'+(c.port||c.tel).replace(/\s/g,'')+'" class="btn btn-ghost" style="text-decoration:none">Appeler</a>';h+='</div>';
+h+='<div class="pan-actions-sticky"><button class="btn btn-ghost" onclick="closeP()">Fermer</button><button class="btn btn-blue" onclick="setPanelEditMode(true)">Modifier</button></div>';
+}
 document.getElementById('db').innerHTML=h;document.getElementById('ov').classList.add('open');document.getElementById('pn').classList.add('open')}
-function closeP(){document.getElementById('ov').classList.remove('open');document.getElementById('pn').classList.remove('open')}
+function openP(i){const c=F[i];if(!c)return;panelClientId=c.id;panelIsNew=false;panelDraftClient=null;panelEditMode=false;renderPanel()}
+function closeP(){panelEditMode=false;panelIsNew=false;panelDraftClient=null;document.getElementById('ov').classList.remove('open');document.getElementById('pn').classList.remove('open')}
 function rw(l,v){return '<div class="row"><span class="rl">'+l+'</span><span class="rv">'+(v||'-')+'</span></div>'}
 function esc(s){if(!s)return '';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function resetF(){document.getElementById('q').value='';document.getElementById('fr').value='';document.getElementById('fd').value='';document.getElementById('fa').value='';document.getElementById('fs').value='';ac.clear();document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));af()}
-function openPById(id){const idx=F.findIndex(c=>c.id===id);if(idx>=0)openP(idx);else{const c=D.find(x=>x.id===id);if(c){F.push(c);openP(F.length-1)}}}
+function openPById(id){const c=D.find(x=>x.id===id);if(!c)return;panelClientId=id;panelIsNew=false;panelDraftClient=null;panelEditMode=false;renderPanel()}
+function openNewClientPanel(){
+panelClientId=null;
+panelIsNew=true;
+panelEditMode=true;
+panelDraftClient={id:Date.now(),nom:'',contact:'',type:'',classif:'PROSPECT',adresse:'',cp:'',ville:'',dept:'',region:'',mbo:'',tel:'',port:'',email:'',ca:0,prio:'',agent:currentAgent||'',cmd:'',relance:'',comment:'',src:'CRM',lat:null,lon:null,distVDA:null,distHSC:null,score:10,n_clt:'',nb_factures:0};
+renderPanel();
+}
+function setPanelEditMode(editMode){panelEditMode=editMode;renderPanel()}
+async function savePanelEdit(){
+const c=panelIsNew?panelDraftClient:D.find(x=>x.id===panelClientId);
+if(!c)return;
+c.nom=document.getElementById('pf-nom').value.trim();
+c.contact=document.getElementById('pf-contact').value.trim();
+c.type=document.getElementById('pf-type').value.trim();
+c.classif=document.getElementById('pf-classif').value;
+c.prio=document.getElementById('pf-prio').value;
+if(canSeeAll())c.agent=document.getElementById('pf-agent').value.trim();
+c.tel=document.getElementById('pf-tel').value.trim();
+c.port=document.getElementById('pf-port').value.trim();
+c.email=document.getElementById('pf-email').value.trim();
+c.adresse=document.getElementById('pf-adresse').value.trim();
+c.cp=document.getElementById('pf-cp').value.trim();
+c.ville=document.getElementById('pf-ville').value.trim();
+c.dept=document.getElementById('pf-dept').value.trim();
+c.region=document.getElementById('pf-region').value.trim();
+c.cmd=document.getElementById('pf-cmd').value;
+c.relance=document.getElementById('pf-relance').value;
+c.src=document.getElementById('pf-src').value.trim();
+c.n_clt=document.getElementById('pf-nclt').value.trim();
+c.ca=parseFloat(document.getElementById('pf-ca').value)||0;
+c.nb_factures=parseInt(document.getElementById('pf-factures').value)||0;
+c.distVDA=parseFloat(document.getElementById('pf-distvda').value);
+c.distHSC=parseFloat(document.getElementById('pf-disthsc').value);
+c.lat=parseFloat(document.getElementById('pf-lat').value);
+c.lon=parseFloat(document.getElementById('pf-lon').value);
+c.comment=document.getElementById('pf-comment').value.trim();
+if(!isFinite(c.distVDA))c.distVDA=null;
+if(!isFinite(c.distHSC))c.distHSC=null;
+if(!isFinite(c.lat))c.lat=null;
+if(!isFinite(c.lon))c.lon=null;
+c.score=recalcClientScore(c);
+const isNew=panelIsNew;
+const ok=isNew?await saveNewClient(c):await saveClientEdit(panelClientId);
+if(ok===false)return;
+panelEditMode=false;
+panelIsNew=false;
+panelDraftClient=null;
+renderPanel();
+if(document.getElementById('tab-tour').classList.contains('active')&&tourDaysData.length>0)refreshTourDisplay();
+if(typeof af==='function')af();
+showSaved(isNew?'\u2713 Client ajoute':'\u2713 Fiche client sauvegardee');
+}
 
 // ========= WEEKLY TOUR PLANNER =========
 const JOURS_FR=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
@@ -536,6 +660,10 @@ let tourDaysData=[];
 let tourPoolData=[];
 let dragData={id:null,fromDay:null};
 let qeClientId=null;
+let panelClientId=null;
+let panelEditMode=false;
+let panelIsNew=false;
+let panelDraftClient=null;
 
 // ---- Week utilities ----
 function getISOWeek(d){const t=new Date(d.valueOf());t.setDate(t.getDate()+3-(t.getDay()+6)%7);const y=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-y)/864e5-(3-(y.getDay()+6)%7))/7)}
@@ -885,7 +1013,7 @@ daysHtml+='<div class="di-km">+'+segKm+' km</div>';
 daysHtml+='<div class="di-ca" style="min-width:60px;text-align:right">'+(c.ca>0?c.ca.toLocaleString('fr-FR')+' \u20ac':'-')+'</div>';
 daysHtml+='<div class="di-actions">';
 daysHtml+='<button class="di-btn cal-btn" onclick="event.stopPropagation();addToGCal('+c.id+','+d+')" title="Ajouter \u00e0 Google Agenda">\uD83D\uDCC5</button>';
-daysHtml+='<button class="di-btn" onclick="event.stopPropagation();openQE('+c.id+')" title="Modifier">\u270E</button>';
+daysHtml+='<button class="di-btn" onclick="event.stopPropagation();openPById('+c.id+');setPanelEditMode(true)" title="Modifier">\u270E</button>';
 daysHtml+='<button class="di-btn" onclick="event.stopPropagation();openPById('+c.id+')" title="D\u00e9tail">\u2139</button>';
 daysHtml+='<button class="di-remove" onclick="event.stopPropagation();removeFromDay('+c.id+','+d+')" title="Retirer du jour">\u2715</button>';
 daysHtml+='</div>';
@@ -903,7 +1031,7 @@ if(remaining.length>0){
 daysHtml+='<div style="background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin-top:4px"><h4 style="font-size:11px;text-transform:uppercase;color:var(--gray-40);margin-bottom:8px;letter-spacing:.3px">Prochains candidats ('+remaining.length+' restants) &mdash; cliquer + pour ajouter \u00e0 un jour</h4>';
 remaining.slice(0,25).forEach(c=>{
 daysHtml+='<div class="pool-row" style="display:flex;align-items:center;padding:5px 6px;border-radius:6px;margin-bottom:2px;font-size:11px;cursor:pointer;transition:background .1s" onmouseover="this.style.background=\'var(--gray-05)\'" onmouseout="this.style.background=\'transparent\'">';
-daysHtml+='<span style="font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:6px" onclick="openQE('+c.id+')">'+esc(c.nom)+'</span>';
+daysHtml+='<span style="font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:6px" onclick="openPById('+c.id+');setPanelEditMode(true)">'+esc(c.nom)+'</span>';
 daysHtml+='<span style="font-size:10px;color:var(--gray-40);margin-right:6px">'+esc(c.ville||'')+' ('+c.dept+')</span>';
 daysHtml+='<span style="background:var(--blue);color:#fff;padding:1px 6px;border-radius:10px;font-size:9px;font-weight:700;margin-right:4px">'+c.score+'</span>';
 daysHtml+='<span style="font-size:10px;color:var(--gray-40);min-width:40px;text-align:right;margin-right:4px">'+Math.round(c[distKey])+' km</span>';
@@ -961,16 +1089,7 @@ c.port=document.getElementById('qe-port').value;
 c.email=document.getElementById('qe-email').value;
 c.comment=document.getElementById('qe-comment').value;
 
-// Recalculate score
-let sc=0;
-const ca=c.ca||0;
-if(ca>=10000)sc+=40;else if(ca>=5000)sc+=30;else if(ca>=2000)sc+=20;else if(ca>=500)sc+=10;else if(ca>0)sc+=5;
-const clMap={TOP:30,ACTIF:20,CLIENT:20,PROSPECT:10,AGENT:5,INACTIF:0};
-sc+=(clMap[c.classif]||0);
-const dist=Math.min(c.distVDA||9999,c.distHSC||9999);
-if(dist<50)sc+=25;else if(dist<100)sc+=20;else if(dist<150)sc+=15;else if(dist<200)sc+=10;else if(dist<300)sc+=5;
-if(c.tel||c.port)sc+=2;if(c.email)sc+=2;if(c.adresse)sc+=2;
-c.score=Math.min(101,sc);
+c.score=recalcClientScore(c);
 
 // Save to Supabase BEFORE closing (closeQE sets qeClientId=null)
 const savedId=qeClientId;
@@ -1154,7 +1273,7 @@ daysHtml+='<div class="di-km">+'+segKm+' km</div>';
 daysHtml+='<div class="di-ca" style="min-width:60px;text-align:right">'+(c.ca>0?c.ca.toLocaleString('fr-FR')+' \u20ac':'-')+'</div>';
 daysHtml+='<div class="di-actions">';
 daysHtml+='<button class="di-btn cal-btn" onclick="event.stopPropagation();addToGCal('+c.id+','+d+')" title="Ajouter \u00e0 Google Agenda">\uD83D\uDCC5</button>';
-daysHtml+='<button class="di-btn" onclick="event.stopPropagation();openQE('+c.id+')" title="Modifier">\u270E</button>';
+daysHtml+='<button class="di-btn" onclick="event.stopPropagation();openPById('+c.id+');setPanelEditMode(true)" title="Modifier">\u270E</button>';
 daysHtml+='<button class="di-btn" onclick="event.stopPropagation();openPById('+c.id+')" title="D\u00e9tail">\u2139</button>';
 daysHtml+='<button class="di-remove" onclick="event.stopPropagation();removeFromDay('+c.id+','+d+')" title="Retirer du jour">\u2715</button>';
 daysHtml+='</div>';
@@ -1172,7 +1291,7 @@ if(remaining.length>0){
 daysHtml+='<div style="background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin-top:4px"><h4 style="font-size:11px;text-transform:uppercase;color:var(--gray-40);margin-bottom:8px;letter-spacing:.3px">Prochains candidats ('+remaining.length+' restants) &mdash; cliquer + pour ajouter \u00e0 un jour</h4>';
 remaining.slice(0,25).forEach(c=>{
 daysHtml+='<div class="pool-row" style="display:flex;align-items:center;padding:5px 6px;border-radius:6px;margin-bottom:2px;font-size:11px;cursor:pointer;transition:background .1s" onmouseover="this.style.background=\'var(--gray-05)\'" onmouseout="this.style.background=\'transparent\'">';
-daysHtml+='<span style="font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:6px" onclick="openQE('+c.id+')">'+esc(c.nom)+'</span>';
+daysHtml+='<span style="font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:6px" onclick="openPById('+c.id+');setPanelEditMode(true)">'+esc(c.nom)+'</span>';
 daysHtml+='<span style="font-size:10px;color:var(--gray-40);margin-right:6px">'+esc(c.ville||'')+' ('+c.dept+')</span>';
 daysHtml+='<span style="background:var(--blue);color:#fff;padding:1px 6px;border-radius:10px;font-size:9px;font-weight:700;margin-right:4px">'+c.score+'</span>';
 daysHtml+='<span style="font-size:10px;color:var(--gray-40);min-width:40px;text-align:right;margin-right:4px">'+Math.round(c[distKey])+' km</span>';
@@ -1289,6 +1408,18 @@ let caFiltered=[];
 let caSortCol='commande';
 let caSortDir=1;
 let caInitDone=false;
+let caCommissionRate=4;
+
+function loadOrderState(){
+try{
+caCommissionRate=parseFloat(localStorage.getItem('crm_commission_rate'));
+if(!isFinite(caCommissionRate))caCommissionRate=4;
+if(caCommissionRate===5)caCommissionRate=4;
+}catch(e){
+caCommissionRate=4;
+}
+}
+function fmtPct(v){return (Math.round(v*100)/100).toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:2})+' %'}
 
 function parseCADate(s){const p=s.split('/');return new Date(+p[2],+p[1]-1,+p[0])}
 
@@ -1312,9 +1443,17 @@ caFiltered.sort((a,b)=>{let va=a[caSortCol],vb=b[caSortCol];if(typeof va==='numb
 function sortCA(col){if(caSortCol===col)caSortDir*=-1;else{caSortCol=col;caSortDir=(col==='hdht'||col==='ht'||col==='ttc'||col==='tva'||col==='droits'||col==='bouteilles')?-1:1}renderCA()}
 
 function fmtEur(v){return v.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' \u20ac'}
+function updateCommissionRate(){
+const v=parseFloat(document.getElementById('ca-commission-rate').value);
+caCommissionRate=isFinite(v)&&v>=0?v:0;
+localStorage.setItem('crm_commission_rate',String(caCommissionRate));
+renderCA();
+}
 
 function renderCA(){
-if(!canSeeAll())return;
+if(!isAdminRole())return;
+const commissionInput=document.getElementById('ca-commission-rate');
+if(commissionInput&&document.activeElement!==commissionInput)commissionInput.value=String(caCommissionRate);
 if(!caInitDone){
 const clients=[...new Set(CA_DATA.map(r=>r.client))].sort();
 const sel=document.getElementById('ca-client-filter');
@@ -1331,6 +1470,7 @@ const totTTC=caFiltered.reduce((s,r)=>s+r.ttc,0);
 const totBtl=caFiltered.reduce((s,r)=>s+r.bouteilles,0);
 const nbCmd=caFiltered.length;
 const panierMoyen=nbCmd>0?totTTC/nbCmd:0;
+const totCommission=getCommissionAmount(totHDHT);
 
 document.getElementById('ca-kpis').innerHTML=
 '<div class="ca-kpi"><div class="ca-kpi-val">'+fmtEur(totTTC)+'</div><div class="ca-kpi-lbl">CA TTC</div></div>'+
@@ -1340,7 +1480,8 @@ document.getElementById('ca-kpis').innerHTML=
 '<div class="ca-kpi red"><div class="ca-kpi-val">'+fmtEur(totTVA)+'</div><div class="ca-kpi-lbl">TVA</div></div>'+
 '<div class="ca-kpi"><div class="ca-kpi-val">'+totBtl+'</div><div class="ca-kpi-lbl">Bouteilles</div></div>'+
 '<div class="ca-kpi green"><div class="ca-kpi-val">'+nbCmd+'</div><div class="ca-kpi-lbl">Commandes</div></div>'+
-'<div class="ca-kpi orange"><div class="ca-kpi-val">'+fmtEur(panierMoyen)+'</div><div class="ca-kpi-lbl">Panier moyen TTC</div></div>';
+'<div class="ca-kpi orange"><div class="ca-kpi-val">'+fmtEur(panierMoyen)+'</div><div class="ca-kpi-lbl">Panier moyen TTC</div></div>'+
+'<div class="ca-kpi purple"><div class="ca-kpi-val">'+fmtEur(totCommission)+'</div><div class="ca-kpi-lbl">Commission ('+fmtPct(caCommissionRate)+')</div></div>';
 
 // Charts - Top clients by TTC + Breakdown bar
 const clientAgg={};
@@ -1373,7 +1514,7 @@ const tbody=document.getElementById('ca-tbody');
 tbody.innerHTML=caFiltered.map(function(r){return '<tr><td>'+r.commande+'</td><td>'+r.date+'</td><td style="font-weight:600">'+r.client+'</td><td>'+r.no_client+'</td><td style="text-align:right">'+fmtEur(r.hdht)+'</td><td style="text-align:right">'+fmtEur(r.droits)+'</td><td style="text-align:right">'+fmtEur(r.ht)+'</td><td style="text-align:right">'+fmtEur(r.tva)+'</td><td style="text-align:right;font-weight:700">'+fmtEur(r.ttc)+'</td><td style="text-align:center">'+r.bouteilles+'</td><td><button class="ca-del-btn" title="Supprimer" data-cmd="'+r.commande+'">&#128465;</button></td></tr>'}).join('');
 // Attach delete handlers
 tbody.querySelectorAll('.ca-del-btn').forEach(function(btn){btn.addEventListener('click',function(){deleteCA(this.getAttribute('data-cmd'))})});
-document.getElementById('ca-tfoot').innerHTML='<tr style="font-weight:800;background:var(--gray-05)"><td colspan="4" style="padding:10px">TOTAL ('+nbCmd+' cmd)</td><td style="text-align:right;padding:10px">'+fmtEur(totHDHT)+'</td><td style="text-align:right;padding:10px">'+fmtEur(totDroits)+'</td><td style="text-align:right;padding:10px">'+fmtEur(totHT)+'</td><td style="text-align:right;padding:10px">'+fmtEur(totTVA)+'</td><td style="text-align:right;padding:10px">'+fmtEur(totTTC)+'</td><td style="text-align:center;padding:10px">'+totBtl+'</td><td></td></tr>';
+document.getElementById('ca-tfoot').innerHTML='<tr style="font-weight:800;background:var(--gray-05)"><td colspan="4" style="padding:10px">TOTAL ('+nbCmd+' cmd) • Commission '+fmtPct(caCommissionRate)+' : '+fmtEur(totCommission)+'</td><td style="text-align:right;padding:10px">'+fmtEur(totHDHT)+'</td><td style="text-align:right;padding:10px">'+fmtEur(totDroits)+'</td><td style="text-align:right;padding:10px">'+fmtEur(totHT)+'</td><td style="text-align:right;padding:10px">'+fmtEur(totTVA)+'</td><td style="text-align:right;padding:10px">'+fmtEur(totTTC)+'</td><td style="text-align:center;padding:10px">'+totBtl+'</td><td></td></tr>';
 }
 
 function deleteCA(cmd){
@@ -1466,13 +1607,40 @@ const res=await fetch(SUPABASE_URL+'/rest/v1/contacts?id=eq.'+clientId,{
 method:'PATCH',
 headers:sbHeaders(),
 body:JSON.stringify({
-classif:c.classif,prio:c.prio,relance:c.relance,cmd:c.cmd,
-tel:c.tel,port:c.port,email:c.email,comment:c.comment,score:c.score
+nom:c.nom,contact:c.contact,type:c.type,classif:c.classif,adresse:c.adresse,cp:c.cp,ville:c.ville,dept:c.dept,region:c.region,
+tel:c.tel,port:c.port,email:c.email,ca:c.ca,prio:c.prio,agent:c.agent,cmd:c.cmd,relance:c.relance,comment:c.comment,src:c.src,
+lat:c.lat,lon:c.lon,distVDA:c.distVDA,distHSC:c.distHSC,score:c.score,n_clt:c.n_clt,nb_factures:c.nb_factures
 })
 });
 if(res.ok){showSaved('\u2713 Client sauvegarde')}
 else{console.error('Save failed',await res.text())}
 }catch(e){console.error('Save error',e)}
+}
+
+async function saveNewClient(c){
+if(!c.agent)c.agent=currentAgent||'';
+if(!c.src)c.src='CRM';
+try{
+const res=await fetch(SUPABASE_URL+'/rest/v1/contacts',{
+method:'POST',
+headers:{...sbHeaders(),'Prefer':'return=minimal'},
+body:JSON.stringify(c)
+});
+if(res.ok){
+D.unshift(c);
+panelClientId=c.id;
+showSaved('\u2713 Client ajoute');
+return true;
+}else{
+console.error('Create failed',await res.text());
+alert('Impossible d ajouter le client.');
+return false;
+}
+}catch(e){
+console.error('Create error',e);
+alert('Erreur pendant l ajout du client.');
+return false;
+}
 }
 
 // Save client edits - called by saveQE
@@ -1706,6 +1874,7 @@ document.getElementById('app-content').style.display='none';
 document.getElementById('login-screen').style.display='flex';
 }
 
+loadOrderState();
 checkSession();
 // Note: default MBO filter is applied inside doLogin() and checkSession() after data loads
 
