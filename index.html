@@ -1419,6 +1419,7 @@ if(caCommissionRate===5)caCommissionRate=4;
 caCommissionRate=4;
 }
 }
+function getCommissionAmount(hdht){return Math.round(((hdht||0)*caCommissionRate))/100}
 function fmtPct(v){return (Math.round(v*100)/100).toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:2})+' %'}
 
 function parseCADate(s){const p=s.split('/');return new Date(+p[2],+p[1]-1,+p[0])}
