@@ -1,4 +1,4 @@
--- ============================================================ <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="data:application/json,{}">
-<title>CRM FSD - MBO</title>
+<title>CRM FSD</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#f6f7fb;--navy:#1b2a4a;--blue:#0073ea;--blue-h:#0060c2;--green:#00c875;--green-d:#00a25b;--orange:#fdab3d;--red:#e2445c;--purple:#a25ddc;--gray-05:#f5f6f8;--gray-10:#e6e9ef;--gray-20:#c5c7d0;--gray-40:#676879;--gray-60:#323338;--card:#fff;--radius:8px;--shadow:0 2px 8px rgba(0,0,0,.08)}
@@ -16,6 +16,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helveti
 .nav-tabs{display:flex;gap:4px;height:100%}
 .nav-tab{padding:0 18px;height:100%;display:flex;align-items:center;font-size:13px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;opacity:.7}
 .nav-tab:hover{opacity:1}.nav-tab.active{border-bottom-color:var(--blue);opacity:1}
+.nav-tab.hidden-tab{display:none}
 .nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
 .nav-badge{background:rgba(255,255,255,.12);padding:4px 12px;border-radius:16px;font-size:12px}
 .tab-content{display:none;padding:20px 24px}.tab-content.active{display:block}
@@ -247,6 +248,13 @@ button,.btn,.chip,.nav-tab,.sel,.di-btn,.di-remove,.ca-del-btn,.pool-add-btn{-we
 /* Fix iOS text size */
 input,select,textarea{font-size:16px!important}
 @media(min-width:1025px){input,select,textarea{font-size:13px!important}}
+/* Admin panel styles */
+.admin-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.admin-tbl thead th{background:var(--gray-05);padding:10px;text-align:left;font-size:11px;text-transform:uppercase;font-weight:700;color:var(--gray-40);border-bottom:1px solid var(--gray-10)}
+.admin-tbl tbody tr{border-bottom:1px solid var(--gray-05)}.admin-tbl tbody tr:hover{background:#f0f4ff}
+.admin-tbl td{padding:10px;vertical-align:middle;font-size:13px}
+.admin-tbl input,.admin-tbl select{padding:6px 8px;border:1px solid var(--gray-10);border-radius:4px;font-size:12px}
+
 /* Storage indicator */
 .save-indicator{position:fixed;bottom:12px;right:12px;background:var(--green);color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:opacity .3s;z-index:999;pointer-events:none}
 .save-indicator.show{opacity:1}
@@ -259,8 +267,8 @@ input,select,textarea{font-size:16px!important}
 <!-- LOGIN SCREEN (Supabase Auth) -->
 <div id="login-screen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1b2a4a 0%,#0073ea 100%)">
 <div style="background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.2);padding:40px;width:380px;max-width:90vw;text-align:center">
-<div style="font-size:28px;font-weight:800;color:#1b2a4a;margin-bottom:4px">CRM <span style="color:#0073ea;font-weight:400">FSD &mdash; MBO</span></div>
-<div style="font-size:13px;color:#676879;margin-bottom:28px">Acc&egrave;s s&eacute;curis&eacute;</div>
+<div style="font-size:28px;font-weight:800;color:#1b2a4a;margin-bottom:4px">CRM <span style="color:#0073ea;font-weight:400">FSD</span></div>
+<div style="font-size:13px;color:#676879;margin-bottom:28px">Acc&egrave;s s&eacute;curis&eacute; &mdash; Multi-agents</div>
 <input type="email" id="login-email" placeholder="Email" style="width:100%;padding:12px 16px;border:2px solid #e6e9ef;border-radius:8px;font-size:15px;margin-bottom:10px;outline:none;transition:border .15s" onfocus="this.style.borderColor='#0073ea'" onblur="this.style.borderColor='#e6e9ef'">
 <input type="password" id="login-pwd" placeholder="Mot de passe" style="width:100%;padding:12px 16px;border:2px solid #e6e9ef;border-radius:8px;font-size:15px;margin-bottom:12px;outline:none;transition:border .15s" onfocus="this.style.borderColor='#0073ea'" onblur="this.style.borderColor='#e6e9ef'" onkeydown="if(event.key==='Enter')doLogin()">
 <div id="login-err" style="color:#e2445c;font-size:12px;font-weight:600;min-height:18px;margin-bottom:8px"></div>
@@ -274,14 +282,15 @@ input,select,textarea{font-size:16px!important}
 
 <div id="app-content" style="display:none">
 <div class="nav">
-<div class="nav-logo">CRM <span>FSD &mdash; MBO</span></div>
+<div class="nav-logo">CRM <span>FSD &mdash; <span id="nav-agent-code">MBO</span></span></div>
 <div class="nav-tabs">
 <div class="nav-tab active" onclick="switchTab('crm')">Clients</div>
 <div class="nav-tab" onclick="switchTab('tour')">Tourn&eacute;es</div>
-<div class="nav-tab" onclick="switchTab('ca')">Chiffre d'Affaires</div>
+<div class="nav-tab" id="nav-ca" onclick="switchTab('ca')">Chiffre d'Affaires</div>
+<div class="nav-tab hidden-tab" id="nav-admin" onclick="switchTab('admin')">Admin</div>
 </div>
 <div class="nav-right">
-<div class="nav-badge">Secteur MBO &bull; 02/04/2026</div>
+<div class="nav-badge" id="nav-badge">Secteur MBO</div>
 <button class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="exportCSV()">Export CSV</button>
 <button class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="logout()">D&eacute;connexion</button>
 </div>
@@ -292,14 +301,14 @@ input,select,textarea{font-size:16px!important}
 <div class="kpis">
 <div class="kpi green"><div class="kpi-val" id="k-a">1302</div><div class="kpi-lbl">Avec CA</div></div>
 <div class="kpi green"><div class="kpi-val" id="k-top">248</div><div class="kpi-lbl">Top (&gt;5k&euro;)</div></div>
-<div class="kpi"><div class="kpi-val" id="k-m">797</div><div class="kpi-lbl">Secteur MBO</div></div>
+<div class="kpi" id="kpi-sector"><div class="kpi-val" id="k-m">0</div><div class="kpi-lbl" id="k-m-lbl">Mon secteur</div></div>
 <div class="kpi purple"><div class="kpi-val" id="k-v">698</div><div class="kpi-lbl">VCF</div></div>
 </div>
 <div class="toolbar">
 <input type="text" class="search" id="q" placeholder="Rechercher..." oninput="af()">
 <select class="sel" id="fr" onchange="af()"><option value="">R&eacute;gion</option><option value="Auvergne-RA">Auvergne-RA</option><option value="Bourgogne-FC">Bourgogne-FC</option><option value="Bretagne">Bretagne</option><option value="Centre-Val de Loire">Centre-Val de Loire</option><option value="Corse">Corse</option><option value="Grand Est">Grand Est</option><option value="Hauts-de-France">Hauts-de-France</option><option value="Ile-de-France">Ile-de-France</option><option value="Normandie">Normandie</option><option value="Nouvelle-Aquitaine">Nouvelle-Aquitaine</option><option value="Occitanie">Occitanie</option><option value="PACA">PACA</option><option value="Pays de la Loire">Pays de la Loire</option></select>
 <select class="sel" id="fd" onchange="af()"><option value="">D&eacute;pt</option><option value="01">01</option><option value="02">02</option><option value="04">04</option><option value="05">05</option><option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option><option value="32">32</option><option value="33">33</option><option value="34">34</option><option value="35">35</option><option value="36">36</option><option value="37">37</option><option value="38">38</option><option value="39">39</option><option value="40">40</option><option value="41">41</option><option value="42">42</option><option value="44">44</option><option value="45">45</option><option value="46">46</option><option value="47">47</option><option value="48">48</option><option value="49">49</option><option value="50">50</option><option value="51">51</option><option value="52">52</option><option value="53">53</option><option value="54">54</option><option value="55">55</option><option value="56">56</option><option value="57">57</option><option value="58">58</option><option value="59">59</option><option value="60">60</option><option value="61">61</option><option value="62">62</option><option value="63">63</option><option value="64">64</option><option value="66">66</option><option value="67">67</option><option value="68">68</option><option value="69">69</option><option value="70">70</option><option value="71">71</option><option value="72">72</option><option value="73">73</option><option value="74">74</option><option value="75">75</option><option value="76">76</option><option value="77">77</option><option value="78">78</option><option value="79">79</option><option value="80">80</option><option value="81">81</option><option value="82">82</option><option value="83">83</option><option value="84">84</option><option value="85">85</option><option value="86">86</option><option value="87">87</option><option value="88">88</option><option value="89">89</option><option value="90">90</option><option value="91">91</option><option value="92">92</option><option value="93">93</option><option value="94">94</option><option value="95">95</option><option value="972">972</option><option value="974">974</option><option value="98">98</option><option value="AB">AB</option><option value="DP">DP</option></select>
-<select class="sel" id="fa" onchange="af()"><option value="">Agent</option><option value="ARA">ARA</option><option value="BAS">BAS</option><option value="BBO">BBO</option><option value="BCH">BCH</option><option value="BRE">BRE</option><option value="BRU">BRU</option><option value="CAG">CAG</option><option value="CBI">CBI</option><option value="CJA">CJA</option><option value="CQU">CQU</option><option value="CSA">CSA</option><option value="DCA">DCA</option><option value="DES">DES</option><option value="FCA">FCA</option><option value="FET">FET</option><option value="FLA">FLA</option><option value="FLE">FLE</option><option value="FVI">FVI</option><option value="GPI">GPI</option><option value="GSA">GSA</option><option value="JBF">JBF</option><option value="JMA">JMA</option><option value="JMO">JMO</option><option value="JWI">JWI</option><option value="KDU">KDU</option><option value="LAM">LAM</option><option value="LCB">LCB</option><option value="LVS">LVS</option><option value="MAC">MAC</option><option value="MBO">MBO</option><option value="MBO (ex-JBF)">MBO (ex-JBF)</option><option value="MJU">MJU</option><option value="MPA">MPA</option><option value="MPE">MPE</option><option value="MRE">MRE</option><option value="NBE">NBE</option><option value="PCR">PCR</option><option value="PMA">PMA</option><option value="PSE">PSE</option><option value="RLE">RLE</option><option value="TMO">TMO</option><option value="TPL">TPL</option><option value="VBO">VBO</option><option value="YCE">YCE</option><option value="YDI">YDI</option></select>
+<span id="fa-wrap"><select class="sel" id="fa" onchange="af()"><option value="">Agent</option><option value="ARA">ARA</option><option value="BAS">BAS</option><option value="BBO">BBO</option><option value="BCH">BCH</option><option value="BRE">BRE</option><option value="BRU">BRU</option><option value="CAG">CAG</option><option value="CBI">CBI</option><option value="CJA">CJA</option><option value="CQU">CQU</option><option value="CSA">CSA</option><option value="DCA">DCA</option><option value="DES">DES</option><option value="FCA">FCA</option><option value="FET">FET</option><option value="FLA">FLA</option><option value="FLE">FLE</option><option value="FVI">FVI</option><option value="GPI">GPI</option><option value="GSA">GSA</option><option value="JBF">JBF</option><option value="JMA">JMA</option><option value="JMO">JMO</option><option value="JWI">JWI</option><option value="KDU">KDU</option><option value="LAM">LAM</option><option value="LCB">LCB</option><option value="LVS">LVS</option><option value="MAC">MAC</option><option value="MBO">MBO</option><option value="MBO (ex-JBF)">MBO (ex-JBF)</option><option value="MJU">MJU</option><option value="MPA">MPA</option><option value="MPE">MPE</option><option value="MRE">MRE</option><option value="NBE">NBE</option><option value="PCR">PCR</option><option value="PMA">PMA</option><option value="PSE">PSE</option><option value="RLE">RLE</option><option value="TMO">TMO</option><option value="TPL">TPL</option><option value="VBO">VBO</option><option value="YCE">YCE</option><option value="YDI">YDI</option></select></span>
 <select class="sel" id="fs" onchange="af()"><option value="">Source</option><option value="VCF">VCF</option><option value="CRM">CRM</option><option value="MULTI">Multi</option></select>
 <div class="chips" id="chs"></div>
 <span class="reset-link" onclick="resetF()">Reset</span>
@@ -315,7 +324,7 @@ input,select,textarea{font-size:16px!important}
 <th onclick="sb('classif')" style="width:80px">Statut</th>
 <th>T&eacute;l</th>
 <th>Email</th>
-<th onclick="sb('ca')" style="text-align:right;width:90px">CA &euro;</th>
+<th onclick="sb('ca')" style="text-align:right;width:90px" id="th-ca">CA &euro;</th>
 <th onclick="sb('agent')" style="width:55px">Agent</th>
 </tr></thead><tbody id="tb"></tbody></table>
 </div>
@@ -331,7 +340,7 @@ input,select,textarea{font-size:16px!important}
 <div class="fg"><label>Clients / jour</label><select class="sel" id="t-perday" onchange=""><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="10">10</option></select></div>
 <div class="fg"><label>Statut</label><select class="sel" id="t-stat" onchange=""><option value="all">Tous</option><option value="clients">Clients actifs</option><option value="priority" selected>Score &gt; 20</option><option value="prospects">Prospects seuls</option><option value="ca">Avec CA uniquement</option></select></div>
 <div class="fg"><label>CA min (&euro;)</label><input type="number" class="sel" id="t-camin" value="0" min="0" step="500" style="width:90px" onchange=""></div>
-<div class="fg"><label>D&eacute;partement</label><select class="sel" id="t-dept" onchange=""><option value="">Tous MBO</option><option value="02">02 - Aisne</option><option value="08">08 - Ardennes</option><option value="14">14 - Calvados</option><option value="27">27 - Eure</option><option value="50">50 - Manche</option><option value="51">51 - Marne</option><option value="55">55 - Meuse</option><option value="59">59 - Nord</option><option value="60">60 - Oise</option><option value="62">62 - Pas-de-Calais</option><option value="76">76 - Seine-Maritime</option><option value="80">80 - Somme</option></select></div>
+<div class="fg"><label>D&eacute;partement</label><select class="sel" id="t-dept" onchange=""><option value="">Tous</option></select></div>
 <button class="btn btn-blue" onclick="genTour()" style="height:36px">&#9654; G&eacute;n&eacute;rer la semaine</button>
 </div>
 
@@ -434,6 +443,16 @@ input,select,textarea{font-size:16px!important}
 </div>
 </div>
 
+<!-- ADMIN TAB -->
+<div class="tab-content" id="tab-admin">
+<h2 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:16px">Gestion des profils agents</h2>
+<div class="tbl-wrap">
+<table class="admin-tbl"><thead><tr>
+<th>Code Agent</th><th>Nom</th><th>R&ocirc;le</th><th>Codes suppl.</th><th></th>
+</tr></thead><tbody id="admin-tbody"></tbody></table>
+</div>
+</div>
+
 <!-- DETAIL PANEL -->
 <div class="overlay" id="ov" onclick="closeP()"></div>
 <div class="panel" id="pn">
@@ -444,19 +463,43 @@ input,select,textarea{font-size:16px!important}
 
 <script>
 let D=[]
+let currentAgent='',currentRole='',currentAgentCodes=[],currentDisplayName='';
+function canSeeAll(){return currentRole==='admin'||currentRole==='manager'}
+function isAdminRole(){return currentRole==='admin'}
 const BASES={"villeneuve":{"name":"Villeneuve-d'Ascq","lat":50.6333,"lon":3.1333,"dept":"59"},"herouville":{"name":"Hérouville-Saint-Clair","lat":49.205,"lon":-0.35,"dept":"14"}};
 const DC={"01":[46.2,5.3],"02":[49.4,3.6],"03":[46.3,3.2],"04":[44.1,6.2],"05":[44.7,6.3],"06":[43.7,7.2],"07":[44.7,4.6],"08":[49.6,4.6],"09":[42.9,1.6],"10":[48.3,4.1],"11":[43.2,2.4],"12":[44.3,2.6],"13":[43.5,5.1],"14":[49.2,-0.4],"15":[45.0,2.7],"16":[45.7,0.2],"17":[45.8,-0.8],"18":[47.1,2.4],"19":[45.3,1.8],"21":[47.3,4.8],"22":[48.5,-3.0],"23":[46.1,2.1],"24":[45.2,0.7],"25":[47.2,6.4],"26":[44.7,5.2],"27":[49.1,1.2],"28":[48.2,1.5],"29":[48.4,-4.3],"30":[44.0,4.1],"31":[43.6,1.4],"32":[43.6,0.6],"33":[44.8,-0.6],"34":[43.6,3.9],"35":[48.1,-1.7],"36":[46.8,1.6],"37":[47.4,0.7],"38":[45.2,5.7],"39":[46.7,5.6],"40":[43.9,-0.5],"41":[47.6,1.3],"42":[45.7,4.2],"43":[45.1,3.7],"44":[47.2,-1.6],"45":[47.9,2.2],"46":[44.5,1.4],"47":[44.3,0.5],"48":[44.5,3.5],"49":[47.4,-0.6],"50":[48.9,-1.3],"51":[49.0,3.9],"52":[48.1,5.3],"53":[48.1,-0.8],"54":[48.7,6.2],"55":[49.0,5.4],"56":[47.7,-2.8],"57":[49.1,6.5],"58":[47.1,3.5],"59":[50.4,3.1],"60":[49.4,2.4],"61":[48.6,0.1],"62":[50.5,2.3],"63":[45.8,3.1],"64":[43.3,-0.8],"65":[43.1,0.1],"66":[42.6,2.5],"67":[48.6,7.5],"68":[47.9,7.2],"69":[45.8,4.8],"70":[47.6,6.2],"71":[46.6,4.4],"72":[47.9,0.2],"73":[45.5,6.5],"74":[46.1,6.4],"75":[48.9,2.3],"76":[49.6,1.1],"77":[48.6,2.9],"78":[48.8,1.9],"79":[46.5,-0.3],"80":[49.9,2.3],"81":[43.7,2.2],"82":[44.0,1.3],"83":[43.5,6.3],"84":[44.0,5.1],"85":[46.7,-1.3],"86":[46.6,0.3],"87":[45.9,1.2],"88":[48.2,6.5],"89":[47.8,3.6],"90":[47.6,6.9],"91":[48.5,2.2],"92":[48.8,2.2],"93":[48.9,2.5],"94":[48.8,2.5],"95":[49.1,2.2]};
 const PS=50;let F=[],cp=1,sc='score',sd=-1,ac=new Set();
 const CM={TOP:{l:'Top',c:'bdg-top',cc:'c-top'},ACTIF:{l:'Actif',c:'bdg-act',cc:'c-act'},CLIENT:{l:'Client',c:'bdg-act',cc:'c-act'},PROSPECT:{l:'Prospect',c:'bdg-pro',cc:'c-pro'},AGENT:{l:'Agent',c:'bdg-age',cc:'c-age'},INACTIF:{l:'Inactif',c:'bdg-ina',cc:'c-ina'}};
 const DCOL=['#0073ea','#00c875','#fdab3d','#a25ddc','#e2445c'];
 
-function switchTab(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');const tabs=document.querySelectorAll('.nav-tab');const idx=t==='crm'?0:t==='tour'?1:2;tabs[idx].classList.add('active');if(t==='tour'){initWeekSelector()}if(t==='ca'){renderCA()}}
+function switchTab(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');const tabs=document.querySelectorAll('.nav-tab');const idx=t==='crm'?0:t==='tour'?1:t==='ca'?2:3;tabs[idx].classList.add('active');if(t==='tour'){initWeekSelector()}if(t==='ca'){renderCA()}if(t==='admin'){loadProfiles()}}
 
 function init(){const cn={};D.forEach(c=>{const k=c.classif;cn[k]=(cn[k]||0)+1});const cc=document.getElementById('chs');
-Object.keys(CM).forEach(k=>{if(!cn[k])return;const ch=document.createElement('span');ch.className='chip '+(CM[k].cc||'');ch.dataset.c=k;ch.innerHTML=CM[k].l+' <span style="opacity:.6">'+(cn[k]||0)+'</span>';ch.onclick=()=>{if(ac.has(k)){ac.delete(k);ch.classList.remove('on')}else{ac.add(k);ch.classList.add('on')}af()};cc.appendChild(ch)});af()}
+Object.keys(CM).forEach(k=>{if(!cn[k])return;const ch=document.createElement('span');ch.className='chip '+(CM[k].cc||'');ch.dataset.c=k;ch.innerHTML=CM[k].l+' <span style="opacity:.6">'+(cn[k]||0)+'</span>';ch.onclick=()=>{if(ac.has(k)){ac.delete(k);ch.classList.remove('on')}else{ac.add(k);ch.classList.add('on')}af()};cc.appendChild(ch)});
+// Populate Region & Dept filters dynamically based on visible contacts
+const visibleContacts=canSeeAll()?D:D.filter(c=>currentAgentCodes.includes(c.agent));
+const regions=new Set();const depts=new Set();
+visibleContacts.forEach(c=>{if(c.region)regions.add(c.region);if(c.dept)depts.add(c.dept)});
+const frSel=document.getElementById('fr');
+frSel.innerHTML='<option value="">R\u00e9gion</option>';
+Array.from(regions).sort().forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;frSel.appendChild(o)});
+const fdSel=document.getElementById('fd');
+fdSel.innerHTML='<option value="">D\u00e9pt</option>';
+Array.from(depts).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;fdSel.appendChild(o)});
+af();
+// Update UI for role
+document.getElementById('nav-agent-code').textContent=currentAgent||'FSD';
+if(isAdminRole()){document.getElementById('nav-badge').textContent='Admin — '+currentAgent}
+else if(currentRole==='manager'){document.getElementById('nav-badge').textContent='Manager — '+currentAgent}
+else{document.getElementById('nav-badge').textContent='Secteur '+currentAgent}
+document.getElementById('nav-ca').classList.toggle('hidden-tab',!canSeeAll());
+document.getElementById('nav-admin').classList.toggle('hidden-tab',!isAdminRole());
+document.getElementById('fa-wrap').style.display=canSeeAll()?'':'none';
+document.getElementById('th-ca').style.display=canSeeAll()?'':'none';
+if(!canSeeAll()){document.getElementById('kpi-sector').querySelector('.kpi-lbl').textContent='Mon secteur'}}
 
 function af(){const q=document.getElementById('q').value.toLowerCase(),reg=document.getElementById('fr').value,dept=document.getElementById('fd').value,age=document.getElementById('fa').value,src=document.getElementById('fs').value;
-F=D.filter(c=>{if(q&&!(c.nom.toLowerCase().includes(q)||c.ville.toLowerCase().includes(q)||c.email.includes(q)||c.cp.includes(q)||c.contact.toLowerCase().includes(q)||c.dept.includes(q)))return false;if(reg&&c.region!==reg)return false;if(dept&&c.dept!==dept)return false;if(age&&c.agent!==age)return false;if(src==='VCF'&&!c.src.includes('VCF'))return false;if(src==='CRM'&&c.src.includes('VCF'))return false;if(src==='MULTI'&&!c.src.includes('|'))return false;if(ac.size>0&&!ac.has(c.classif))return false;return true});
+F=D.filter(c=>{if(!canSeeAll()&&!currentAgentCodes.includes(c.agent))return false;if(q&&!(c.nom.toLowerCase().includes(q)||c.ville.toLowerCase().includes(q)||c.email.includes(q)||c.cp.includes(q)||c.contact.toLowerCase().includes(q)||c.dept.includes(q)))return false;if(reg&&c.region!==reg)return false;if(dept&&c.dept!==dept)return false;if(age&&c.agent!==age)return false;if(src==='VCF'&&!c.src.includes('VCF'))return false;if(src==='CRM'&&c.src.includes('VCF'))return false;if(src==='MULTI'&&!c.src.includes('|'))return false;if(ac.size>0&&!ac.has(c.classif))return false;return true});
 ds();cp=1;render();uk()}
 function ds(){F.sort((a,b)=>{let va=a[sc],vb=b[sc];if(sc==='ca'||sc==='score')return(va-vb)*sd;va=String(va).toLowerCase();vb=String(vb).toLowerCase();return va<vb?-sd:va>vb?sd:0})}
 function sb(c){if(sc===c)sd*=-1;else{sc=c;sd=(c==='ca'||c==='score')?-1:1}ds();render()}
@@ -464,19 +507,19 @@ function sb(c){if(sc===c)sd*=-1;else{sc=c;sd=(c==='ca'||c==='score')?-1:1}ds();r
 function render(){const s=(cp-1)*PS,pg=F.slice(s,s+PS),tb=document.getElementById('tb');
 tb.innerHTML=pg.map((c,i)=>{const m=CM[c.classif]||{l:c.classif,c:''};const mbo=c.mbo?'<span class="bdg bdg-mbo">MBO</span>':'';const vcf=c.src.includes('VCF')?'<span class="bdg bdg-vcf">VCF</span>':'';const ph=c.port||c.tel||'';const em=c.email?'<a href="mailto:'+c.email+'" onclick="event.stopPropagation()">'+c.email+'</a>':'';
 const sp=Math.min(100,c.score);const sc_col=sp>60?'var(--green)':sp>30?'var(--orange)':'var(--gray-20)';
-return '<tr onclick="openP('+(s+i)+')"><td><div class="score-bar"><div class="score-fill" style="width:'+sp+'%;background:'+sc_col+'"></div></div> <span style="font-size:11px;font-weight:700;color:var(--gray-40)">'+c.score+'</span></td><td class="nom-cell">'+esc(c.nom)+mbo+vcf+'</td><td>'+esc(c.ville)+'</td><td>'+esc(c.dept)+'</td><td>'+esc(c.region)+'</td><td><span class="bdg '+m.c+'">'+m.l+'</span></td><td style="font-size:12px">'+esc(ph)+'</td><td style="font-size:12px">'+em+'</td><td style="text-align:right;font-weight:600">'+(c.ca>0?c.ca.toLocaleString('fr-FR',{minimumFractionDigits:0})+' \u20ac':'-')+'</td><td style="font-size:12px">'+esc(c.agent)+'</td></tr>'}).join('');
+return '<tr onclick="openP('+(s+i)+')"><td><div class="score-bar"><div class="score-fill" style="width:'+sp+'%;background:'+sc_col+'"></div></div> <span style="font-size:11px;font-weight:700;color:var(--gray-40)">'+c.score+'</span></td><td class="nom-cell">'+esc(c.nom)+mbo+vcf+'</td><td>'+esc(c.ville)+'</td><td>'+esc(c.dept)+'</td><td>'+esc(c.region)+'</td><td><span class="bdg '+m.c+'">'+m.l+'</span></td><td style="font-size:12px">'+esc(ph)+'</td><td style="font-size:12px">'+em+'</td>'+(canSeeAll()?'<td style="text-align:right;font-weight:600">'+(c.ca>0?c.ca.toLocaleString('fr-FR',{minimumFractionDigits:0})+' \u20ac':'-')+'</td>':'')+'<td style="font-size:12px">'+esc(c.agent)+'</td></tr>'}).join('');
 document.getElementById('rc').textContent=F.length+' contacts';document.getElementById('caf').textContent='';renderPg()}
 
 function renderPg(){const tp=Math.ceil(F.length/PS),p=document.getElementById('pg');if(tp<=1){p.innerHTML='';return}let h='<button '+(cp===1?'disabled':'')+' onclick="gp('+(cp-1)+')">&laquo;</button>';const st=Math.max(1,cp-3),en=Math.min(tp,cp+3);for(let i=st;i<=en;i++)h+='<button class="'+(i===cp?'on':'')+'" onclick="gp('+i+')">'+i+'</button>';h+='<button '+(cp===tp?'disabled':'')+' onclick="gp('+(cp+1)+')">&raquo;</button>';p.innerHTML=h}
 function gp(p){cp=p;render();window.scrollTo({top:200,behavior:'smooth'})}
-function uk(){document.getElementById('k-a').textContent=F.filter(c=>c.ca>0).length;document.getElementById('k-top').textContent=F.filter(c=>c.ca>5000).length;document.getElementById('k-m').textContent=F.filter(c=>c.mbo).length;document.getElementById('k-v').textContent=F.filter(c=>c.src.includes('VCF')).length}
+function uk(){document.getElementById('k-a').textContent=F.filter(c=>c.ca>0).length;document.getElementById('k-top').textContent=F.filter(c=>c.ca>5000).length;document.getElementById('k-m').textContent=canSeeAll()?D.length:F.filter(c=>currentAgentCodes.includes(c.agent)).length;document.getElementById('k-v').textContent=F.filter(c=>c.src.includes('VCF')).length}
 
 function openP(i){const c=F[i];if(!c)return;const m=CM[c.classif]||{l:c.classif,c:''};
 document.getElementById('dn').textContent=c.nom;
 document.getElementById('ds').innerHTML='<span class="bdg '+m.c+'">'+m.l+'</span>'+(c.mbo?' <span class="bdg bdg-mbo">MBO</span>':'')+(c.src.includes('VCF')?' <span class="bdg bdg-vcf">VCF</span>':'')+' &mdash; '+esc(c.ville||'')+' ('+c.dept+') &bull; Score: <b>'+c.score+'</b>';
 let h='<div class="sec"><h3>Contact</h3>'+rw('G\u00e9rant',c.contact)+rw('T\u00e9l',c.tel)+rw('Portable',c.port)+rw('Email',c.email?'<a href="mailto:'+c.email+'">'+c.email+'</a>':'')+'</div>';
 h+='<div class="sec"><h3>Localisation</h3>'+rw('Adresse',c.adresse)+rw('CP',c.cp)+rw('Ville',c.ville)+rw('D\u00e9pt',c.dept)+rw('R\u00e9gion',c.region)+rw('Dist. Villeneuve',c.distVDA<9000?c.distVDA+' km':'-')+rw('Dist. H\u00e9rouville',c.distHSC<9000?c.distHSC+' km':'-')+'</div>';
-h+='<div class="sec"><h3>Commercial</h3>'+rw('CA',c.ca>0?c.ca.toLocaleString('fr-FR')+' \u20ac':'-')+rw('Type',c.type)+rw('Priorit\u00e9',c.prio)+rw('Agent',c.agent)+rw('Commande',c.cmd)+rw('Relance',c.relance)+rw('Source',c.src)+'</div>';
+h+='<div class="sec"><h3>Commercial</h3>'+(canSeeAll()?rw('CA',c.ca>0?c.ca.toLocaleString('fr-FR')+' \u20ac':'-'):'')+rw('Type',c.type)+rw('Priorit\u00e9',c.prio)+rw('Agent',c.agent)+rw('Commande',c.cmd)+rw('Relance',c.relance)+rw('Source',c.src)+'</div>';
 if(c.comment)h+='<div class="sec"><h3>Notes</h3><div class="note-box">'+esc(c.comment)+'</div></div>';
 h+='<div class="acts">';h+='<button class="btn btn-blue" onclick="closeP();openQE('+c.id+')">\u270E Modifier</button>';if(c.email)h+='<a href="mailto:'+c.email+'" class="btn btn-ghost" style="text-decoration:none">Email</a>';if(c.port||c.tel)h+='<a href="tel:'+(c.port||c.tel).replace(/\s/g,'')+'" class="btn btn-ghost" style="text-decoration:none">Appeler</a>';h+='</div>';
 document.getElementById('db').innerHTML=h;document.getElementById('ov').classList.add('open');document.getElementById('pn').classList.add('open')}
@@ -516,6 +559,14 @@ if(w===currentWeek)opt.selected=true;
 sel.appendChild(opt);
 }
 updateWeekLabel();
+// Populate dept filter dynamically from agent's contacts
+const depts=new Set();
+(canSeeAll()?D:D.filter(c=>currentAgentCodes.includes(c.agent))).forEach(c=>{if(c.dept)depts.add(c.dept)});
+const deptSel=document.getElementById('t-dept');
+const curVal=deptSel.value;
+deptSel.innerHTML='<option value="">Tous</option>';
+Array.from(depts).sort().forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;deptSel.appendChild(o)});
+deptSel.value=curVal;
 }
 
 function updateWeekLabel(){
@@ -677,7 +728,7 @@ if(weekVal){
 }
 
 // Filter pool: only MBO sectors, with GPS, within radius
-const mboDepts=new Set(['02','08','14','27','50','51','55','59','60','62','76','80']);
+const mboDepts=new Set(D.filter(c=>currentAgentCodes.includes(c.agent)).map(c=>c.dept));
 let pool=D.filter(c=>{
 if(!c.lat||!c.lon||c.lat===0)return false;
 const dist=c[distKey];
@@ -818,7 +869,7 @@ dirLabel=' \u2022 '+dirNames[idx];
 }
 
 daysHtml+='<div class="day-card d'+(d+1)+'" data-day="'+d+'">';
-daysHtml+='<div class="day-header"><span>'+dayLabel+dirLabel+'</span><span class="day-km">'+stat.km+' km \u2022 '+stat.n+' clients \u2022 '+stat.ca.toLocaleString('fr-FR',{maximumFractionDigits:0})+' \u20ac</span></div>';
+daysHtml+='<div class="day-header"><span>'+dayLabel+dirLabel+'</span><span class="day-km">'+stat.km+' km \u2022 '+stat.n+' clients'+(canSeeAll()?(' \u2022 '+stat.ca.toLocaleString('fr-FR',{maximumFractionDigits:0})+' \u20ac'):'')+'</span></div>';
 if(deptSet)daysHtml+='<div style="padding:4px 14px;font-size:10px;color:var(--gray-40);background:var(--gray-05)">D\u00e9pts: '+deptSet+'</div>';
 daysHtml+='<div class="day-list" id="daylist-'+d+'">';
 clients.forEach((c,i)=>{
@@ -1087,7 +1138,7 @@ dirLabel=' \u2022 '+dirNames[idx];
 }
 
 daysHtml+='<div class="day-card d'+(d+1)+'" data-day="'+d+'">';
-daysHtml+='<div class="day-header"><span>'+dayLabel+dirLabel+'</span><span class="day-km">'+stat.km+' km \u2022 '+stat.n+' clients \u2022 '+stat.ca.toLocaleString('fr-FR',{maximumFractionDigits:0})+' \u20ac</span></div>';
+daysHtml+='<div class="day-header"><span>'+dayLabel+dirLabel+'</span><span class="day-km">'+stat.km+' km \u2022 '+stat.n+' clients'+(canSeeAll()?(' \u2022 '+stat.ca.toLocaleString('fr-FR',{maximumFractionDigits:0})+' \u20ac'):'')+'</span></div>';
 if(deptSet)daysHtml+='<div style="padding:4px 14px;font-size:10px;color:var(--gray-40);background:var(--gray-05)">D\u00e9pts: '+deptSet+'</div>';
 daysHtml+='<div class="day-list" id="daylist-'+d+'">';
 clients.forEach((c,i)=>{
@@ -1167,7 +1218,7 @@ if(c.contact)details+='Contact: '+c.contact+'\n';
 if(c.port)details+='Portable: '+c.port+'\n';
 if(c.tel)details+='T\u00e9l: '+c.tel+'\n';
 if(c.email)details+='Email: '+c.email+'\n';
-if(c.ca>0)details+='CA: '+c.ca.toLocaleString('fr-FR')+' \u20ac\n';
+if(canSeeAll()&&c.ca>0)details+='CA: '+c.ca.toLocaleString('fr-FR')+' \u20ac\n';
 details+='Classification: '+c.classif+'\n';
 details+='Score: '+c.score+'\n';
 if(c.comment)details+='Notes: '+c.comment+'\n';
@@ -1213,12 +1264,12 @@ csv+=[JOURS_FR[d],dateStr,i+1,'"'+c.nom+'"','"'+(c.ville||'')+'"',c.dept,c.cp,'"
 });
 });
 const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Tournee_'+weekLabel+'FSD_MBO.csv';a.click();
+const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Tournee_'+weekLabel+'FSD_'+currentAgent+'.csv';a.click();
 }
 
 // ---- switchTab already handles tour init ----
 
-function exportCSV(){const h='NOM;CONTACT;TYPE;STATUT;SCORE;ADRESSE;CP;VILLE;DEPT;REGION;MBO;TEL;PORTABLE;EMAIL;CA;PRIORITE;AGENT;DIST_VDA;DIST_HSC;SOURCE\n';const r=F.map(c=>[c.nom,c.contact,c.type,c.classif,c.score,c.adresse,c.cp,c.ville,c.dept,c.region,c.mbo?'OUI':'',c.tel,c.port,c.email,c.ca,c.prio,c.agent,c.distVDA,c.distHSC,c.src].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(';')).join('\n');const b=new Blob(['\uFEFF'+h+r],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='CRM_FSD_MBO_export.csv';a.click()}
+function exportCSV(){const h='NOM;CONTACT;TYPE;STATUT;SCORE;ADRESSE;CP;VILLE;DEPT;REGION;MBO;TEL;PORTABLE;EMAIL;CA;PRIORITE;AGENT;DIST_VDA;DIST_HSC;SOURCE\n';const r=F.map(c=>[c.nom,c.contact,c.type,c.classif,c.score,c.adresse,c.cp,c.ville,c.dept,c.region,c.mbo?'OUI':'',c.tel,c.port,c.email,c.ca,c.prio,c.agent,c.distVDA,c.distHSC,c.src].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(';')).join('\n');const b=new Blob(['\uFEFF'+h+r],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='CRM_FSD_'+currentAgent+'_export.csv';a.click()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeP()});
 
 // ========= CHIFFRE D'AFFAIRES =========
@@ -1263,6 +1314,7 @@ function sortCA(col){if(caSortCol===col)caSortDir*=-1;else{caSortCol=col;caSortD
 function fmtEur(v){return v.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' \u20ac'}
 
 function renderCA(){
+if(!canSeeAll())return;
 if(!caInitDone){
 const clients=[...new Set(CA_DATA.map(r=>r.client))].sort();
 const sel=document.getElementById('ca-client-filter');
@@ -1381,12 +1433,12 @@ filterCA();
 let csv='COMMANDE;DATE;CLIENT;N_CLIENT;HDHT;DROITS;HT;TVA;TTC;BOUTEILLES\n';
 caFiltered.forEach(r=>{csv+=[r.commande,r.date,'"'+r.client+'"',r.no_client,r.hdht,r.droits,r.ht,r.tva,r.ttc,r.bouteilles].join(';')+'\n'});
 const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='CA_FSD_MBO_export.csv';a.click();
+const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='CA_FSD_'+currentAgent+'_export.csv';a.click();
 }
 
 // ========= SUPABASE API =========
-const SUPABASE_URL = "https://pizuebrltwzdhlrrqpaw.supabase.co";
-const SUPABASE_KEY = "sb_publishable_S3h4S7fa2_QHVkSb7ZgI2g_SYTI0TM_";
+const SUPABASE_URL = "https://ajukuwrznhfsfdeejdkl.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqdWt1d3J6bmhmc2ZkZWVqZGtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwOTM4MzgsImV4cCI6MjA5MDY2OTgzOH0.fHCVO12OutfO1PNM97s3jRVjFVPlGLl7wBmZA4gbM7s";
 let supabaseToken = null;
 
 function sbHeaders(){
@@ -1478,117 +1530,4 @@ status.textContent='Chargement... '+allContacts.length+' contacts';
 }
 
 // Normalize mbo field
-allContacts.forEach(c=>{
-if(c.mbo===true||c.mbo==='OUI'||c.mbo==='true')c.mbo='OUI';
-else c.mbo='';
-});
-
-D.length=0;
-allContacts.forEach(c=>D.push(c));
-F=D.slice();
-
-status.textContent='Chargement du CA...';
-// Load CA
-const caRes=await fetch(SUPABASE_URL+'/rest/v1/commandes?select=*&order=date.desc',{
-headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+supabaseToken}
-});
-if(caRes.ok){
-const caData=await caRes.json();
-CA_DATA.length=0;
-caData.forEach(r=>CA_DATA.push(r));
-}
-
-return true;
-}catch(e){
-console.error('Load error',e);
-status.textContent='Erreur: '+e.message;
-return false;
-}
-}
-
-// Login with Supabase Auth
-async function doLogin(){
-const email=document.getElementById('login-email').value.trim();
-const pwd=document.getElementById('login-pwd').value;
-const errEl=document.getElementById('login-err');
-const btn=document.getElementById('login-btn');
-if(!email||!pwd){errEl.textContent='Remplis email et mot de passe';return}
-btn.disabled=true;btn.textContent='Connexion...';errEl.textContent='';
-try{
-const res=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{
-method:'POST',
-headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
-body:JSON.stringify({email:email,password:pwd})
-});
-const data=await res.json();
-if(!res.ok)throw new Error(data.error_description||data.msg||'Identifiants incorrects');
-supabaseToken=data.access_token;
-// Store session
-sessionStorage.setItem('sb_token',data.access_token);
-sessionStorage.setItem('sb_refresh',data.refresh_token);
-// Show loading, hide login
-document.getElementById('login-screen').style.display='none';
-document.getElementById('loading-screen').style.display='flex';
-// Load data
-const ok=await loadFromSupabase();
-if(ok){
-document.getElementById('loading-screen').style.display='none';
-document.getElementById('app-content').style.display='block';
-init();
-document.getElementById('fa').value='MBO';af();
-}
-}catch(e){
-errEl.textContent=e.message;
-btn.disabled=false;btn.textContent='Connexion';
-}
-}
-
-// Check existing session on page load
-async function checkSession(){
-const token=sessionStorage.getItem('sb_token');
-if(!token)return;
-// Verify token is still valid
-try{
-const res=await fetch(SUPABASE_URL+'/auth/v1/user',{
-headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+token}
-});
-if(!res.ok){sessionStorage.removeItem('sb_token');return}
-supabaseToken=token;
-document.getElementById('login-screen').style.display='none';
-document.getElementById('loading-screen').style.display='flex';
-const ok=await loadFromSupabase();
-if(ok){
-document.getElementById('loading-screen').style.display='none';
-document.getElementById('app-content').style.display='block';
-init();
-document.getElementById('fa').value='MBO';af();
-}else{
-document.getElementById('loading-screen').style.display='none';
-document.getElementById('login-screen').style.display='flex';
-}
-}catch(e){
-sessionStorage.removeItem('sb_token');
-}
-}
-
-// Logout
-function logout(){
-sessionStorage.removeItem('sb_token');
-sessionStorage.removeItem('sb_refresh');
-supabaseToken=null;
-document.getElementById('app-content').style.display='none';
-document.getElementById('login-screen').style.display='flex';
-}
-
-checkSession();
-// Note: default MBO filter is applied inside doLogin() and checkSession() after data loads
-
-</script>
-<div class="cal-toast" id="cal-toast"></div>
-<div class="save-indicator" id="save-ind"></div>
-</div><!-- /app-content -->
-
-
-
-</body>
-</html>
+allContacts.forEach(c=
