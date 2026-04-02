@@ -196,13 +196,35 @@ let lines = [];
 let selectedProduct = null;
 
 // Init
-(function(){
+(async function(){
   document.getElementById('pf-date').value = new Date().toISOString().split('T')[0];
   buildDatalist();
   // Try to load CRM token from localStorage (shared with CRM)
   sbToken = localStorage.getItem('sb_token');
-  if(sbToken){ loadCRMContacts(); updateCRMStatus(true); }
-  else { updateCRMStatus(false); }
+  if(sbToken){
+    // Validate token first
+    try{
+      const vRes = await fetch(SUPABASE_URL+'/auth/v1/user',{
+        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sbToken}
+      });
+      if(!vRes.ok){
+        // Token expired or invalid — clear and show login
+        console.warn('Token invalide ou expiré, suppression');
+        localStorage.removeItem('sb_token');
+        sbToken=null;
+        updateCRMStatus(false);
+      } else {
+        await loadCRMContacts();
+        updateCRMStatus(true);
+      }
+    }catch(e){
+      console.error('Token validation error',e);
+      sbToken=null;
+      updateCRMStatus(false);
+    }
+  } else {
+    updateCRMStatus(false);
+  }
   // Close dropdown on click outside
   document.addEventListener('click', function(e){
     if(!e.target.closest('#pf-client-search') && !e.target.closest('#pf-client-dropdown')){
@@ -218,7 +240,17 @@ async function loadCRMContacts(){
       const res=await fetch(SUPABASE_URL+'/rest/v1/contacts?select=id,nom,enseigne,adresse,cp,ville,departement,tel,port,email,agent,classif&order=nom.asc&offset='+offset+'&limit=1000',{
         headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sbToken}
       });
-      if(!res.ok) break;
+      if(!res.ok){
+        console.error('CRM contacts fetch error: HTTP '+res.status);
+        if(res.status===401||res.status===403){
+          localStorage.removeItem('sb_token');
+          sbToken=null;
+          crmContacts=[];
+          updateCRMStatus(false);
+          return;
+        }
+        break;
+      }
       const batch=await res.json();
       all=all.concat(batch);
       if(batch.length<1000) break;
@@ -226,8 +258,7 @@ async function loadCRMContacts(){
     }
     crmContacts=all;
     console.log('CRM: '+crmContacts.length+' contacts charg\u00e9s');
-    updateCRMStatus(true);
-  }catch(e){console.error('CRM load error',e);updateCRMStatus(false)}
+  }catch(e){console.error('CRM load error',e);crmContacts=[];updateCRMStatus(false)}
 }
 
 function searchClients(val){
