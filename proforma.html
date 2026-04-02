@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proforma — Free Spirits Distribution</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{--bg:#faf5ef;--navy:#2c2420;--copper:#b87333;--copper-h:#9a5f2a;--green:#6b8f5e;--red:#c45c5c;--cream:#f5f0ea;--border:#e0d6cc;--muted:#b8a99a;--text:#3d3430;--text-light:#7a6e63;--card:#fff;--radius:8px;--shadow:0 2px 8px rgba(44,36,32,.1)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.nav{background:var(--navy);color:#fff;display:flex;align-items:center;height:48px;padding:0 20px;position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:800;font-size:18px;letter-spacing:-.5px}.nav-logo i{font-style:italic}.nav-logo span{color:var(--copper);font-weight:400}
+.nav-right{margin-left:auto;display:flex;gap:10px;align-items:center}
+.nav-right a{color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;transition:.15s}
+.nav-right a:hover{color:#fff;background:rgba(255,255,255,.1)}
+.container{max-width:1200px;margin:0 auto;padding:20px 24px}
+h2{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.full{grid-column:1/-1}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.card h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--copper);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--cream)}
+label{display:block;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}
+input,select,textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;background:#fff;transition:border .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--copper)}
+textarea{min-height:60px;resize:vertical}
+input[readonly]{background:var(--cream);color:var(--text-light)}
+.btn{padding:9px 18px;border-radius:var(--radius);border:none;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+.btn-copper{background:var(--copper);color:#fff}.btn-copper:hover{background:var(--copper-h)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#5a7d4e}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#a84a4a}
+.btn-ghost{background:transparent;color:var(--text-light);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--copper);color:var(--copper)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--cream);padding:10px 8px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;color:var(--text-light);border-bottom:2px solid var(--border);white-space:nowrap}
+tbody td{padding:8px;border-bottom:1px solid var(--cream);vertical-align:middle}
+tbody tr:hover{background:#f5efe6}
+tfoot td{padding:10px 8px;font-weight:800;border-top:2px solid var(--copper);color:var(--navy)}
+.del-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px}.del-btn:hover{background:#fde8e8}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-top:16px}
+.sum-box{background:var(--cream);border-radius:var(--radius);padding:14px;text-align:center;border-left:3px solid var(--copper)}
+.sum-box.green{border-left-color:var(--green)}
+.sum-val{font-size:20px;font-weight:800;color:var(--navy)}.sum-lbl{font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+.hint{font-size:11px;color:var(--muted);margin-top:4px}
+.product-info{display:flex;gap:8px;align-items:center;margin-top:6px;padding:8px 12px;background:var(--cream);border-radius:var(--radius);font-size:12px;color:var(--text-light)}
+.product-info .pi-name{font-weight:700;color:var(--text)}
+.product-info .pi-cat{background:var(--copper);color:#fff;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.empty-state{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.hidden{display:none}
+@media(max-width:768px){.grid2,.grid3,.summary-grid{grid-template-columns:1fr}.container{padding:12px}}
+@media print{.nav,.actions,.no-print{display:none!important}.container{padding:0;max-width:100%}}
+</style>
+</head>
+<body>
+<div class="nav">
+<div class="nav-logo"><i>free</i><span>SPIRITS</span> — Proforma</div>
+<div class="nav-right">
+<a href="index.html">&#8592; Retour CRM</a>
+</div>
+</div>
+
+<div class="container">
+<h2>Editeur de Proforma</h2>
+
+<!-- CLIENT INFO -->
+<div class="card">
+<h3>Informations Client</h3>
+<div class="grid3">
+<div><label>Nom / Enseigne</label><input type="text" id="pf-client" placeholder="MAISON DUPONT"></div>
+<div><label>N&deg; Client</label><input type="text" id="pf-noclient" placeholder="ex: 1545"></div>
+<div><label>Date</label><input type="date" id="pf-date"></div>
+<div class="full"><label>Adresse</label><input type="text" id="pf-adresse" placeholder="12 rue de la Paix, 75002 Paris"></div>
+<div><label>T&eacute;l&eacute;phone</label><input type="tel" id="pf-tel" placeholder="01 23 45 67 89"></div>
+<div><label>Email</label><input type="email" id="pf-email" placeholder="contact@client.fr"></div>
+<div><label>N&deg; Proforma</label><input type="text" id="pf-numero" placeholder="PF-2026-001"></div>
+</div>
+</div>
+
+<!-- ADD PRODUCT LINE -->
+<div class="card no-print">
+<h3>Ajouter un produit</h3>
+<div class="grid3">
+<div class="full"><label>Rechercher un produit</label><input type="text" id="pf-search" list="pf-datalist" placeholder="Tapez un nom, une référence ou une catégorie..." oninput="onProductSearch(this.value)"><datalist id="pf-datalist"></datalist></div>
+</div>
+<div id="pf-product-info" class="hidden"></div>
+<div class="grid3" style="margin-top:10px">
+<div><label>Quantit&eacute; (bouteilles)</label><input type="number" id="pf-qty" min="1" step="1" value="6" onchange="updateQtyHint()"></div>
+<div><label>Prix HDHT unitaire</label><input type="number" id="pf-hdht" step="0.01" min="0"></div>
+<div><label>Remise %</label><input type="number" id="pf-remise" min="0" max="100" step="0.5" value="0"></div>
+</div>
+<div id="pf-qty-hint" class="hint"></div>
+<div class="actions">
+<button class="btn btn-copper" onclick="addLine()">&#10010; Ajouter au bon</button>
+<button class="btn btn-ghost" onclick="clearLines()">Vider le bon</button>
+</div>
+</div>
+
+<!-- ORDER TABLE -->
+<div class="card">
+<h3>Lignes de la proforma</h3>
+<div class="tbl-wrap">
+<table>
+<thead><tr>
+<th>R&eacute;f.</th><th>Produit</th><th>Cat.</th><th>Vol.</th><th>PCB</th>
+<th>Qt&eacute;</th><th>HDHT Unit.</th><th>Remise</th><th>HDHT Net</th>
+<th>Droits</th><th>HT Unit.</th><th>Total HT</th><th class="no-print"></th>
+</tr></thead>
+<tbody id="pf-lines"></tbody>
+<tfoot id="pf-tfoot"></tfoot>
+</table>
+</div>
+<div id="pf-empty" class="empty-state">Aucun produit ajout&eacute;. Utilisez la recherche ci-dessus.</div>
+<div class="summary-grid" id="pf-summary" style="display:none">
+<div class="sum-box"><div class="sum-val" id="s-hdht">0</div><div class="sum-lbl">Total HDHT</div></div>
+<div class="sum-box"><div class="sum-val" id="s-droits">0</div><div class="sum-lbl">Droits + CSS</div></div>
+<div class="sum-box"><div class="sum-val" id="s-ht">0</div><div class="sum-lbl">Total HT</div></div>
+<div class="sum-box green"><div class="sum-val" id="s-ttc">0</div><div class="sum-lbl">Total TTC (20%)</div></div>
+</div>
+</div>
+
+<!-- CONDITIONS -->
+<div class="card">
+<h3>Conditions</h3>
+<div class="grid2">
+<div><label>Conditions de paiement</label><select id="pf-paiement">
+<option value="30j">Paiement à 30 jours</option>
+<option value="comptant">Comptant</option>
+<option value="45j">Paiement à 45 jours</option>
+<option value="60j">Paiement à 60 jours</option>
+<option value="prelevement">Prélèvement automatique</option>
+</select></div>
+<div><label>Validit&eacute; de l'offre</label><input type="text" id="pf-validite" value="30 jours"></div>
+<div><label>Franco de port</label><select id="pf-franco">
+<option value="oui">Franco (livraison incluse)</option>
+<option value="non">Port en sus</option>
+<option value="mini">Franco à partir de 500€ HT</option>
+</select></div>
+<div><label>Agent commercial</label><input type="text" id="pf-agent" value="MBO"></div>
+<div class="full"><label>Notes / Conditions particulières</label><textarea id="pf-notes" placeholder="Animation, remise exceptionnelle, conditions spécifiques..."></textarea></div>
+</div>
+</div>
+
+<!-- EXPORT -->
+<div class="card no-print">
+<h3>Export</h3>
+<div class="actions">
+<button class="btn btn-copper" onclick="exportPDF()">&#128196; Générer PDF</button>
+<button class="btn btn-ghost" onclick="window.print()">&#128424; Imprimer</button>
+<button class="btn btn-ghost" onclick="exportCSV()">&#128196; Export CSV</button>
+</div>
+</div>
+
+</div>
+
+<script>
+const CATALOG = [{"ref": "", "name": "ISLAY ALES BIG STRAND CRAFT LAGER", "category": "BIERE", "classif": "LAGER", "etui": "", "vol": "44", "tav": 4.0, "pcb": 12, "hdht": 3.23, "droits": 0.07, "css": 0, "prix_ht": 3.3, "coef": 2.01, "pvc_ttc": 6.65}, {"ref": "", "name": "ISLAY ALES HAZY IPA", "category": "BIERE", "classif": "IPA", "etui": "", "vol": "44", "tav": 4.0, "pcb": 12, "hdht": 3.4, "droits": 0.07, "css": 0, "prix_ht": 3.4, "coef": 2.04, "pvc_ttc": 6.95}, {"ref": "", "name": "ISLAY ALES FINLAGGAN IPA", "category": "BIERE", "classif": "IPA", "etui": "", "vol": "44", "tav": 5.0, "pcb": 12, "hdht": 3.36, "droits": 0.09, "css": 0, "prix_ht": 3.45, "coef": 2.02, "pvc_ttc": 6.95}, {"ref": "", "name": "ISLAY ALES BLACK ROCK SMOKE STOUT", "category": "BIERE", "classif": "STOUT", "etui": "", "vol": "44", "tav": 4.8, "pcb": 12, "hdht": 3.86, "droits": 0.09, "css": 0, "prix_ht": 3.95, "coef": 2.0, "pvc_ttc": 7.9}, {"ref": "413", "name": "OPPORTUNE 1791 BLANC BRESIL", "category": "CACHAÇA", "classif": "", "etui": "", "vol": "70", "tav": 45.0, "pcb": 6, "hdht": 17.8, "droits": 6.09, "css": 1.95, "prix_ht": 25.84, "coef": 1.74, "pvc_ttc": 45.0}, {"ref": "408", "name": "ESCAGNAN  DISTILLERIE VIEILLE PRUNE D'ENTE", "category": "EAU-DE-VIE", "classif": "FRUIT", "etui": "COFFRET BOIS", "vol": "50", "tav": 43.0, "pcb": 3, "hdht": 30.61, "droits": 4.15, "css": 1.33, "prix_ht": 36.1, "coef": 1.83, "pvc_ttc": 66.0}, {"ref": "61", "name": "MICLO DISTILLERIE FRAMBOISE SAUVAGE GRANDE RÉSERVE", "category": "EAU-DE-VIE", "classif": "FRUIT", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 3, "hdht": 22.82, "droits": 5.82, "css": 1.87, "prix_ht": 30.5, "coef": 1.93, "pvc_ttc": 59.0}, {"ref": "63", "name": "MICLO DISTILLERIE KIRSCH VIEUX GRANDE RÉSERVE", "category": "EAU-DE-VIE", "classif": "FRUIT", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 3, "hdht": 19.52, "droits": 5.82, "css": 1.87, "prix_ht": 27.2, "coef": 1.84, "pvc_ttc": 50.0}, {"ref": "62", "name": "MICLO DISTILLERIE MIRABELLE GRANDE RÉSERVE", "category": "EAU-DE-VIE", "classif": "FRUIT", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 3, "hdht": 19.52, "droits": 5.82, "css": 1.87, "prix_ht": 27.2, "coef": 1.84, "pvc_ttc": 50.0}, {"ref": "60", "name": "MICLO DISTILLERIE POIRE WILLIAMS GRANDE RÉSERVE", "category": "EAU-DE-VIE", "classif": "FRUIT", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 3, "hdht": 19.72, "droits": 5.82, "css": 1.87, "prix_ht": 27.4, "coef": 1.82, "pvc_ttc": 50.0}, {"ref": "64", "name": "MICLO DISTILLERIE VIEILLE PRUNE GRANDE RÉSERVE", "category": "EAU-DE-VIE", "classif": "FRUIT", "etui": "OUI", "vol": "70", "tav": 40.0, "pcb": 3, "hdht": 19.05, "droits": 5.41, "css": 1.74, "prix_ht": 26.2, "coef": 1.87, "pvc_ttc": 49.0}, {"ref": "65", "name": "MICLO DISTILLERIE MARC DE GEWURZTRAMINER GRANDE RÉSERVE", "category": "EAU-DE-VIE", "classif": "FRUIT", "etui": "OUI", "vol": "70", "tav": 45.0, "pcb": 3, "hdht": 17.46, "droits": 6.09, "css": 1.95, "prix_ht": 25.5, "coef": 1.76, "pvc_ttc": 45.0}, {"ref": "66", "name": "MICLO DISTILLERIE COFFRET 3 CŒUR DE CHAUFFE  : POIRE WILLIAMS + MIRABELLE + FRAMBOISE SAUVAGE*", "category": "EAU-DE-VIE", "classif": "FRUIT", "etui": "OUI", "vol": "3 x 70", "tav": 45.0, "pcb": 3, "hdht": 129.3, "droits": 18.26, "css": 5.86, "prix_ht": 153.42, "coef": 0, "pvc_ttc": 0}, {"ref": "", "name": "MICLO DISTILLERIE MIRABELLE CŒUR DE CHAUFFE*", "category": "EAU-DE-VIE", "classif": "FRUIT", "etui": "OUI", "vol": "70", "tav": 45.0, "pcb": 1, "hdht": 42.5, "droits": 6.09, "css": 1.95, "prix_ht": 50.54, "coef": 1.8, "pvc_ttc": 91.0}, {"ref": "142", "name": "MICLO DISTILLERIE POIRE WILLIAMS CŒUR DE CHAUFFE", "category": "EAU-DE-VIE", "classif": "FRUIT", "etui": "OUI", "vol": "70", "tav": 45.0, "pcb": 3, "hdht": 42.5, "droits": 6.09, "css": 1.95, "prix_ht": 50.54, "coef": 1.8, "pvc_ttc": 91.0}, {"ref": "141", "name": "MICLO DISTILLERIE FRAMBOISE SAUVAGE CŒUR DE CHAUFFE", "category": "EAU-DE-VIE", "classif": "FRUIT", "etui": "OUI", "vol": "70", "tav": 45.0, "pcb": 3, "hdht": 44.3, "droits": 6.09, "css": 1.95, "prix_ht": 52.34, "coef": 1.78, "pvc_ttc": 93.0}, {"ref": "379", "name": "MICLO DISTILLERIE CERISES SEMI-CONFITES", "category": "EAU-DE-VIE", "classif": "FRUIT CAPTIF", "etui": "OUI", "vol": "50", "tav": 15.0, "pcb": 6, "hdht": 13.45, "droits": 1.45, "css": 0, "prix_ht": 14.9, "coef": 1.75, "pvc_ttc": 26.0}, {"ref": "240", "name": "MICLO DISTILLERIE EAU-DE-VIE POUR FRUITS", "category": "EAU-DE-VIE", "classif": "", "etui": "", "vol": "100", "tav": 50.0, "pcb": 6, "hdht": 8.84, "droits": 9.66, "css": 3.1, "prix_ht": 20.2, "coef": 1.83, "pvc_ttc": 37.0}, {"ref": "547", "name": "ROUGET DE LISLE DISTILLERIE BM SIGNATURE", "category": "GIN", "classif": "DISTILLÉ", "etui": "OUI", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 19.35, "droits": 5.41, "css": 1.74, "prix_ht": 26.5, "coef": 1.77, "pvc_ttc": 47.0}, {"ref": "476", "name": "BREWDOG DISTILLING CO. LONEWOLF", "category": "GIN", "classif": "LONDON DRY", "etui": "", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 15.45, "droits": 5.41, "css": 1.74, "prix_ht": 22.6, "coef": 1.81, "pvc_ttc": 40.9}, {"ref": "478", "name": "BREWDOG DISTILLING CO. LONEWOLF", "category": "GIN", "classif": "LONDON DRY", "etui": "", "vol": "70", "tav": 38.0, "pcb": 6, "hdht": 17.11, "droits": 5.14, "css": 1.65, "prix_ht": 23.9, "coef": 1.82, "pvc_ttc": 43.5}, {"ref": "166", "name": "BREWDOG DISTILLING CO. ZEALOT'S HEART", "category": "GIN", "classif": "LONDON DRY", "etui": "", "vol": "70", "tav": 44.0, "pcb": 6, "hdht": 17.24, "droits": 5.95, "css": 1.91, "prix_ht": 25.1, "coef": 1.81, "pvc_ttc": 45.5}, {"ref": "134", "name": "MICLO DISTILLERIE TRADITION", "category": "GIN", "classif": "DISTILLÉ", "etui": "OUI", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 15.97, "droits": 5.41, "css": 1.74, "prix_ht": 23.12, "coef": 1.82, "pvc_ttc": 42.0}, {"ref": "135", "name": "MICLO DISTILLERIE FORESTIER", "category": "GIN", "classif": "DISTILLÉ", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 17.95, "droits": 5.82, "css": 1.87, "prix_ht": 25.63, "coef": 1.83, "pvc_ttc": 47.0}, {"ref": "318", "name": "UP CRAFT SPIRITS GINOUT", "category": "GIN", "classif": "VIEILLI", "etui": "", "vol": "50", "tav": 46.0, "pcb": 6, "hdht": 26.83, "droits": 4.44, "css": 1.43, "prix_ht": 32.7, "coef": 1.8, "pvc_ttc": 59.0}, {"ref": "591", "name": "MICLO DISTILLERIE LIQUEUR DE PLANTES", "category": "LIQUEUR", "classif": "PLANTE", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 16.82, "droits": 5.82, "css": 1.87, "prix_ht": 24.5, "coef": 1.84, "pvc_ttc": 45.0}, {"ref": "593", "name": "MICLO DISTILLERIE LIQUEUR DE FLEUR DE SUREAU", "category": "LIQUEUR", "classif": "", "etui": "NON", "vol": "70", "tav": 18.0, "pcb": 6, "hdht": 12.07, "droits": 2.43, "css": 0, "prix_ht": 14.5, "coef": 1.79, "pvc_ttc": 26.0}, {"ref": "536", "name": "PASTIS DE L’ÎLE DE RÉ – MILLÉSIME 2023", "category": "PASTIS", "classif": "", "etui": "", "vol": "70", "tav": 45.0, "pcb": 6, "hdht": 14.6, "droits": 6.09, "css": 1.95, "prix_ht": 21.9, "coef": 1.78, "pvc_ttc": 39.5}, {"ref": "407", "name": "ESCAGNAN  DISTILLERIE LES BONHOMMES", "category": "EAU-DE-VIE", "classif": "PUR MALT", "etui": "SAC TOILE", "vol": "70", "tav": 42.0, "pcb": 6, "hdht": 21.49, "droits": 5.68, "css": 1.82, "prix_ht": 29.0, "coef": 1.79, "pvc_ttc": 52.0}, {"ref": "446", "name": "ESCAGNAN  DISTILLERIE POPCORN", "category": "EAU-DE-VIE", "classif": "PUR GRAIN", "etui": "SAC TOILE", "vol": "70", "tav": 42.0, "pcb": 6, "hdht": 24.49, "droits": 5.68, "css": 1.82, "prix_ht": 32.0, "coef": 1.81, "pvc_ttc": 58.0}, {"ref": "479", "name": "BREWDOG DISTILLING CO. DUO RUM", "category": "RUM SPIRIT DRINK", "classif": "SPICED RUM", "etui": "", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 16.35, "droits": 5.41, "css": 1.74, "prix_ht": 23.5, "coef": 1.83, "pvc_ttc": 43.0}, {"ref": "480", "name": "BREWDOG DISTILLING CO.", "category": "RUM SPIRIT DRINK", "classif": "SPICED RUM", "etui": "", "vol": "70", "tav": 38.0, "pcb": 6, "hdht": 17.71, "droits": 5.14, "css": 1.65, "prix_ht": 24.5, "coef": 1.84, "pvc_ttc": 45.0}, {"ref": "603", "name": "MANA'O BLANC (SANS ÉTUI)", "category": "RHUM", "classif": "PUR JUS", "etui": "", "vol": "70", "tav": 50.0, "pcb": 6, "hdht": 19.56, "droits": 6.76, "css": 2.17, "prix_ht": 28.5, "coef": 1.82, "pvc_ttc": 52.0}, {"ref": "603", "name": "MANA'O BLANC", "category": "RHUM", "classif": "PUR JUS", "etui": "OUI", "vol": "70", "tav": 50.0, "pcb": 6, "hdht": 21.06, "droits": 6.76, "css": 2.17, "prix_ht": 30.0, "coef": 1.8, "pvc_ttc": 54.0}, {"ref": "604", "name": "MANA'O BRUN (SANS ÉTUI)", "category": "RHUM", "classif": "PUR JUS", "etui": "", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 25.82, "droits": 5.82, "css": 1.87, "prix_ht": 33.5, "coef": 1.94, "pvc_ttc": 65.0}, {"ref": "604", "name": "MANA'O BRUN", "category": "RHUM", "classif": "PUR JUS", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 27.32, "droits": 5.82, "css": 1.87, "prix_ht": 35.0, "coef": 1.91, "pvc_ttc": 67.0}, {"ref": "655", "name": "MANA'O VIEUX", "category": "RHUM", "classif": "PUR JUS", "etui": "OUI", "vol": "70", "tav": 44.0, "pcb": 6, "hdht": 44.14, "droits": 5.95, "css": 1.91, "prix_ht": 52.0, "coef": 1.9, "pvc_ttc": 99.0}, {"ref": "361", "name": "MANA'O RANGIROA BLANC (SANS ETUI)", "category": "RHUM", "classif": "PUR JUS", "etui": "", "vol": "70", "tav": 48.5, "pcb": 6, "hdht": 33.83, "droits": 6.56, "css": 2.11, "prix_ht": 42.5, "coef": 1.86, "pvc_ttc": 79.0}, {"ref": "361", "name": "MANA'O RANGIROA BLANC", "category": "RHUM", "classif": "PUR JUS", "etui": "OUI", "vol": "70", "tav": 48.5, "pcb": 6, "hdht": 35.33, "droits": 6.56, "css": 2.11, "prix_ht": 44.0, "coef": 1.8, "pvc_ttc": 79.0}, {"ref": "520", "name": "MANA'O AMPHORE BLANC", "category": "RHUM", "classif": "PUR JUS", "etui": "OUI", "vol": "70", "tav": 54.2, "pcb": 6, "hdht": 56.98, "droits": 7.33, "css": 2.35, "prix_ht": 66.67, "coef": 1.94, "pvc_ttc": 129.0}, {"ref": "409", "name": "OPPORTUNE 1791 BLANC MARTINIQUE", "category": "RHUM", "classif": "AOC AGRICOLE", "etui": "", "vol": "70", "tav": 50.0, "pcb": 6, "hdht": 17.64, "droits": 3.38, "css": 2.17, "prix_ht": 23.2, "coef": 1.81, "pvc_ttc": 42.0}, {"ref": "410", "name": "OPPORTUNE 1791 AMBRÉ MARTINIQUE**", "category": "RHUM", "classif": "AOC AGRICOLE", "etui": "", "vol": "70", "tav": 45.0, "pcb": 6, "hdht": 20.19, "droits": 3.05, "css": 1.95, "prix_ht": 25.19, "coef": 1.83, "pvc_ttc": 46.0}, {"ref": "438", "name": "OPPORTUNE 1791 VSOP MARTINIQUE**", "category": "RHUM", "classif": "AOC AGRICOLE", "etui": "", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 23.4, "droits": 2.91, "css": 1.87, "prix_ht": 28.18, "coef": 1.85, "pvc_ttc": 52.0}, {"ref": "439", "name": "OPPORTUNE 1791 XO MARTINIQUE**", "category": "RHUM", "classif": "AOC AGRICOLE", "etui": "", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 27.0, "droits": 2.91, "css": 1.87, "prix_ht": 31.78, "coef": 1.95, "pvc_ttc": 62.0}, {"ref": "414", "name": "OPPORTUNE 1791 VIEUX PANAMA", "category": "RHUM", "classif": "TRADITIONNEL", "etui": "", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 19.55, "droits": 5.82, "css": 1.87, "prix_ht": 27.23, "coef": 1.82, "pvc_ttc": 49.5}, {"ref": "415", "name": "OPPORTUNE 1791 BLEND CHABINE DORÉE FWI-BARBADOS", "category": "RHUM", "classif": "PUR JUS", "etui": "", "vol": "70", "tav": 63.0, "pcb": 6, "hdht": 26.14, "droits": 8.52, "css": 2.74, "prix_ht": 37.4, "coef": 1.85, "pvc_ttc": 69.0}, {"ref": "416", "name": "OPPORTUNE 1791 BLEND PANAMA - GUATEMALA - NICARAGUA", "category": "RHUM", "classif": "TRADITIONNEL", "etui": "", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 19.45, "droits": 5.82, "css": 1.87, "prix_ht": 27.13, "coef": 1.82, "pvc_ttc": 49.5}, {"ref": "417", "name": "OPPORTUNE 1791 VIEUX GUATEMALA", "category": "RHUM", "classif": "TRADITIONNEL", "etui": "", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 19.17, "droits": 5.41, "css": 1.74, "prix_ht": 26.32, "coef": 1.8, "pvc_ttc": 47.5}, {"ref": "645", "name": "ROBO RUM PURE MÉLASSE", "category": "RHUM", "classif": "TRADITIONNEL", "etui": "OUI", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 14.85, "droits": 5.41, "css": 1.74, "prix_ht": 22.0, "coef": 1.8, "pvc_ttc": 39.5}, {"ref": "627", "name": "ROBO RUM PURE SINGLE ESTATE", "category": "RHUM", "classif": "PUR JUS", "etui": "OUI", "vol": "70", "tav": 45.0, "pcb": 6, "hdht": 16.96, "droits": 6.09, "css": 1.95, "prix_ht": 25.0, "coef": 1.8, "pvc_ttc": 45.0}, {"ref": "628", "name": "ROBO RUM AFFINAGE BANYULS", "category": "RHUM", "classif": "PUR JUS", "etui": "OUI", "vol": "70", "tav": 48.0, "pcb": 6, "hdht": 18.02, "droits": 6.49, "css": 2.08, "prix_ht": 26.6, "coef": 1.84, "pvc_ttc": 49.0}, {"ref": "602", "name": "RON BODEGA 6 YEARS OLD", "category": "RON", "classif": "VIEUX", "etui": "", "vol": "70", "tav": 46.0, "pcb": 6, "hdht": 31.48, "droits": 6.22, "css": 2.0, "prix_ht": 39.7, "coef": 1.81, "pvc_ttc": 72.0}, {"ref": "596", "name": "TEQUILA CASA RAYOS BLANCO", "category": "TEQUILA", "classif": "BLANCO", "etui": "NON", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 24.45, "droits": 5.41, "css": 1.74, "prix_ht": 31.6, "coef": 1.84, "pvc_ttc": 58.0}, {"ref": "444", "name": "DOMAINE DOMINIQUE AUROY BLANC DE CORAIL", "category": "VIN DE TAHITI", "classif": "BLANC SEC", "etui": "", "vol": "75", "tav": 12.0, "pcb": 6, "hdht": 18.97, "droits": 0.03, "css": 0, "prix_ht": 19.0, "coef": 1.89, "pvc_ttc": 36.0}, {"ref": "430", "name": "DOMAINE DOMINIQUE AUROY ROSÉ NACARAT", "category": "VIN DE TAHITI", "classif": "ROSÉ", "etui": "", "vol": "75", "tav": 12.0, "pcb": 6, "hdht": 18.97, "droits": 0.03, "css": 0, "prix_ht": 19.0, "coef": 1.89, "pvc_ttc": 36.0}, {"ref": "549", "name": "DOMAINE DOMINIQUE AUROY CLOS DU RÉCIF", "category": "VIN DE TAHITI", "classif": "BLANC SEC", "etui": "", "vol": "75", "tav": 12.0, "pcb": 6, "hdht": 21.97, "droits": 0.03, "css": 0, "prix_ht": 22.0, "coef": 1.91, "pvc_ttc": 42.0}, {"ref": "308", "name": "DOMAINE DOMINIQUE AUROY MONAMONA", "category": "VIN DE TAHITI", "classif": "BLANC MOELLEUX", "etui": "", "vol": "75", "tav": 12.0, "pcb": 6, "hdht": 18.97, "droits": 0.03, "css": 0, "prix_ht": 19.0, "coef": 1.89, "pvc_ttc": 36.0}, {"ref": "546", "name": "ROUGET DE LISLE DISTILLERIE BM SIGNATURE", "category": "VODKA", "classif": "AROMATISÉE", "etui": "OUI", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 20.35, "droits": 5.41, "css": 1.74, "prix_ht": 27.5, "coef": 1.75, "pvc_ttc": 48.0}, {"ref": "481", "name": "BREWDOG DISTILLING CO. ABSTRAKT", "category": "VODKA", "classif": "VODKA", "etui": "", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 13.55, "droits": 5.41, "css": 1.74, "prix_ht": 20.7, "coef": 1.88, "pvc_ttc": 39.0}, {"ref": "613", "name": "LE BLEND BY ARC*", "category": "WHISKY", "classif": "BLEND", "etui": "", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 11.85, "droits": 5.41, "css": 1.74, "prix_ht": 19.0, "coef": 1.74, "pvc_ttc": 33.0}, {"ref": "614", "name": "LE BLEND TOURBÉ BY ARC*", "category": "WHISKY", "classif": "BLEND", "etui": "", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 12.85, "droits": 5.41, "css": 1.74, "prix_ht": 20.0, "coef": 1.75, "pvc_ttc": 35.0}, {"ref": "615", "name": "ARC AFFINAGE SAUVIGNON", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 20.45, "droits": 5.41, "css": 1.74, "prix_ht": 27.6, "coef": 1.79, "pvc_ttc": 49.5}, {"ref": "617", "name": "ARC AFFINAGE SÉMILLON", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 6, "hdht": 24.78, "droits": 6.22, "css": 2.0, "prix_ht": 33.0, "coef": 1.79, "pvc_ttc": 59.0}, {"ref": "616", "name": "ARC AFFINAGE MERLOT", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 22.32, "droits": 5.82, "css": 1.87, "prix_ht": 30.0, "coef": 1.87, "pvc_ttc": 56.0}, {"ref": "620", "name": "ARC AFFINAGE SAVAGNIN - CUVÉE ÉPHÉMÈRE", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 48.0, "pcb": 6, "hdht": 28.12, "droits": 6.49, "css": 2.08, "prix_ht": 36.7, "coef": 1.96, "pvc_ttc": 72.0}, {"ref": "618", "name": "ARC AFFINAGE VERMENTINU - CUVÉE ÉPHÉMÈRE", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 42.0, "pcb": 6, "hdht": 24.19, "droits": 5.68, "css": 1.82, "prix_ht": 31.7, "coef": 1.96, "pvc_ttc": 62.0}, {"ref": "619", "name": "ARC AFFINAGE TOURBÉ - CUVÉE ÉPHÉMÈRE", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 6, "hdht": 29.38, "droits": 6.22, "css": 2.0, "prix_ht": 37.6, "coef": 1.84, "pvc_ttc": 69.0}, {"ref": "623", "name": "ARC COFFRET TRIO DE 3 WHISKIES (3 x 20)", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "COFFRET", "vol": "3x20", "tav": 40.0, "pcb": 3, "hdht": 23.53, "droits": 4.99, "css": 1.6, "prix_ht": 30.12, "coef": 1.86, "pvc_ttc": 56.0}, {"ref": "544", "name": "ROUGET DE LISLE DISTILLERIE BM SIGNATURE FUME AU TUYE", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 42.0, "pcb": 6, "hdht": 24.49, "droits": 5.68, "css": 1.82, "prix_ht": 32.0, "coef": 1.84, "pvc_ttc": 59.0}, {"ref": "541", "name": "ROUGET DE LISLE DISTILLERIE BM SIGNATURE 5 ANS", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 40.0, "pcb": 6, "hdht": 23.85, "droits": 5.41, "css": 1.74, "prix_ht": 31.0, "coef": 1.81, "pvc_ttc": 56.0}, {"ref": "542", "name": "ROUGET DE LISLE DISTILLERIE BM SIGNATURE 8 ANS", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 42.0, "pcb": 6, "hdht": 30.49, "droits": 5.68, "css": 1.82, "prix_ht": 38.0, "coef": 1.89, "pvc_ttc": 72.0}, {"ref": "543", "name": "ROUGET DE LISLE DISTILLERIE BM SIGNATURE 12 ANS", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 44.0, "pcb": 3, "hdht": 37.14, "droits": 5.95, "css": 1.91, "prix_ht": 45.0, "coef": 1.98, "pvc_ttc": 89.0}, {"ref": "551", "name": "ROUGET DE LISLE DISTILLERIE BM SIGNATURE 15 ANS", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 3, "hdht": 46.78, "droits": 6.22, "css": 2.0, "prix_ht": 55.0, "coef": 1.98, "pvc_ttc": 109.0}, {"ref": "639", "name": "ROUGET DE LISLE DISTILLERIE BM SIGNATURE 19 ANS", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 57.38, "pcb": 1, "hdht": 134.75, "droits": 7.76, "css": 2.49, "prix_ht": 145.0, "coef": 1.72, "pvc_ttc": 249.0}, {"ref": "118", "name": "CASTAN WHISKY VILANOVA BERBIE BIO", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 22.02, "droits": 5.82, "css": 1.87, "prix_ht": 29.7, "coef": 1.82, "pvc_ttc": 54.0}, {"ref": "121", "name": "CASTAN WHISKY VILANOVA TERROCITA BIO", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 24.52, "droits": 5.82, "css": 1.87, "prix_ht": 32.2, "coef": 1.83, "pvc_ttc": 59.0}, {"ref": "127", "name": "CASTAN WHISKY VILANOVA GOST BIO", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 6, "hdht": 27.78, "droits": 6.22, "css": 2.0, "prix_ht": 36.0, "coef": 1.89, "pvc_ttc": 68.0}, {"ref": "124", "name": "CASTAN WHISKY VILANOVA ROJA BIO", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 6, "hdht": 27.42, "droits": 6.22, "css": 2.0, "prix_ht": 35.64, "coef": 1.82, "pvc_ttc": 65.0}, {"ref": "607", "name": "CASTAN WHISKY VILANOVA ARGILE BIO", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 3, "hdht": 28.88, "droits": 6.22, "css": 2.0, "prix_ht": 37.1, "coef": 1.86, "pvc_ttc": 69.0}, {"ref": "643", "name": "CASTAN WHISKY VILANOVA SHED", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 48.0, "pcb": 3, "hdht": 34.92, "droits": 6.49, "css": 2.08, "prix_ht": 43.5, "coef": 1.82, "pvc_ttc": 79.0}, {"ref": "644", "name": "CASTAN WHISKY VILANOVA GILBERT SIGNATURE #1", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 48.0, "pcb": 6, "hdht": 34.92, "droits": 6.49, "css": 2.08, "prix_ht": 43.5, "coef": 1.82, "pvc_ttc": 79.0}, {"ref": "558", "name": "DOMAINE DE LA PEZE MOYSSOU 2020", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 3, "hdht": 33.77, "droits": 6.22, "css": 2.0, "prix_ht": 42.0, "coef": 1.88, "pvc_ttc": 79.0}, {"ref": "605", "name": "DOMAINE DE LA PEZE MOYSSOU 2021", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 3, "hdht": 33.77, "droits": 6.22, "css": 2.0, "prix_ht": 42.0, "coef": 1.88, "pvc_ttc": 79.0}, {"ref": "510", "name": "ESCAGNAN DISTILLERIE CAVALCADE", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "COFFRET BOIS", "vol": "70", "tav": 45.0, "pcb": 6, "hdht": 32.0, "droits": 6.09, "css": 1.95, "prix_ht": 40.04, "coef": 1.8, "pvc_ttc": 72.0}, {"ref": "600", "name": "ESCAGNAN DISTILLERIE SINGLE MALT TOURBÉ", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 45.0, "pcb": 6, "hdht": 31.86, "droits": 6.09, "css": 1.95, "prix_ht": 39.9, "coef": 1.8, "pvc_ttc": 72.0}, {"ref": "642", "name": "ESCAGNAN DISTILLERIE SINGLE MALT", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 45.0, "pcb": 6, "hdht": 29.46, "droits": 6.09, "css": 1.95, "prix_ht": 37.5, "coef": 1.81, "pvc_ttc": 68.0}, {"ref": "646", "name": "FLATNÖSE BLEND", "category": "WHISKY", "classif": "BLEND", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 14.66, "droits": 5.82, "css": 1.87, "prix_ht": 22.34, "coef": 1.81, "pvc_ttc": 36.0}, {"ref": "647", "name": "FLATNÖSE RUM BARREL FINISH", "category": "WHISKY", "classif": "BLEND", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 17.02, "droits": 5.82, "css": 1.87, "prix_ht": 24.7, "coef": 1.83, "pvc_ttc": 42.0}, {"ref": "648", "name": "FLATNÖSE PEATED", "category": "WHISKY", "classif": "BLENDED MALT", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 6, "hdht": 21.42, "droits": 6.22, "css": 2.0, "prix_ht": 29.64, "coef": 1.78, "pvc_ttc": 49.0}, {"ref": "650", "name": "BÅRELEGS ISLAY", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 6, "hdht": 28.53, "droits": 6.22, "css": 2.0, "prix_ht": 36.75, "coef": 1.84, "pvc_ttc": 59.0}, {"ref": "651", "name": "BÅRELEGS BATTLE AXE", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 55.7, "pcb": 6, "hdht": 35.05, "droits": 7.53, "css": 2.42, "prix_ht": 45.0, "coef": 1.81, "pvc_ttc": 75.0}, {"ref": "652", "name": "PICTI TRIBE", "category": "WHISKY", "classif": "SINGLE MALT", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 6, "hdht": 20.31, "droits": 6.22, "css": 2.0, "prix_ht": 28.53, "coef": 1.85, "pvc_ttc": 49.0}, {"ref": "552", "name": "LANDA'S DISTILLERIE BROUSSE WHISKY SINGLE GRAIN", "category": "WHISKY", "classif": "SINGLE GRAIN", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 6, "hdht": 31.21, "droits": 6.22, "css": 2.0, "prix_ht": 39.43, "coef": 1.65, "pvc_ttc": 65.0}, {"ref": "553", "name": "LANDA'S DISTILLERIE SAUGANE WHISKY SINGLE GRAIN", "category": "WHISKY", "classif": "SINGLE GRAIN", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 6, "hdht": 31.21, "droits": 6.22, "css": 2.0, "prix_ht": 39.43, "coef": 1.65, "pvc_ttc": 65.0}, {"ref": "572", "name": "MICLO DISTILLERIE WELCHE'S SINGLE MALT ‘VORVONE’’", "category": "WHISKY", "classif": "ALSACIEN IGP", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 21.52, "droits": 5.82, "css": 1.87, "prix_ht": 29.2, "coef": 1.88, "pvc_ttc": 55.0}, {"ref": "573", "name": "MICLO DISTILLERIE WELCHE’S SINGLE MALT ‘’KALOUI’’", "category": "WHISKY", "classif": "ALSACIEN IGP", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 23.02, "droits": 5.82, "css": 1.87, "prix_ht": 30.7, "coef": 1.86, "pvc_ttc": 57.0}, {"ref": "574", "name": "MICLO DISTILLERIE WELCHE'S SINGLE MALT ‘’FAUDEY’’ (FUMÉ)", "category": "WHISKY", "classif": "ALSACIEN IGP", "etui": "OUI", "vol": "70", "tav": 43.0, "pcb": 6, "hdht": 24.72, "droits": 5.82, "css": 1.87, "prix_ht": 32.4, "coef": 1.88, "pvc_ttc": 61.0}, {"ref": "575", "name": "MICLO DISTILLERIE WELCHE'S SINGLE MALT ‘’NAUR MA’’ (TOURBÉ)", "category": "WHISKY", "classif": "ALSACIEN IGP", "etui": "OUI", "vol": "70", "tav": 46.0, "pcb": 6, "hdht": 26.58, "droits": 6.22, "css": 2.0, "prix_ht": 34.8, "coef": 1.87, "pvc_ttc": 65.0}, {"ref": "347", "name": "MICLO DISTILLERIE WELCHE'S SINGLE MALT", "category": "WHISKY", "classif": "ALSACIEN IGP", "etui": "OUI", "vol": "3 x 20", "tav": 0, "pcb": 6, "hdht": 27.97, "droits": 5.1, "css": 1.63, "prix_ht": 34.7, "coef": 1.93, "pvc_ttc": 67.0}, {"ref": "595", "name": "MICLO DISTILLERIE WELCHE'S SINGLE MALT CÔTIE RÔTIE SMALL BATCH #8", "category": "WHISKY", "classif": "ALSACIEN IGP", "etui": "OUI", "vol": "70", "tav": 46.3, "pcb": 3, "hdht": 36.73, "droits": 6.26, "css": 2.01, "prix_ht": 45.0, "coef": 1.82, "pvc_ttc": 82.0}, {"ref": "621", "name": "MICLO DISTILLERIE WELCHE'S SINGLE MALT CUVEE GRANDS PALAIS #9", "category": "WHISKY", "classif": "ALSACIEN IGP", "etui": "OUI", "vol": "70", "tav": 49.4, "pcb": 3, "hdht": 48.17, "droits": 6.68, "css": 2.15, "prix_ht": 57.0, "coef": 1.81, "pvc_ttc": 103.0}, {"ref": "622", "name": "MICLO DISTILLERIE WELCHE'S SINGLE MALT CHERRY CASK #9", "category": "WHISKY", "classif": "ALSACIEN IGP", "etui": "OUI", "vol": "70", "tav": 46.8, "pcb": 3, "hdht": 39.34, "droits": 6.33, "css": 2.03, "prix_ht": 47.7, "coef": 1.84, "pvc_ttc": 88.0}];
+
+let lines = [];
+let selectedProduct = null;
+
+// Init
+(function(){
+  document.getElementById('pf-date').value = new Date().toISOString().split('T')[0];
+  buildDatalist();
+})();
+
+function buildDatalist(){
+  const dl = document.getElementById('pf-datalist');
+  dl.innerHTML = '';
+  CATALOG.forEach(function(p){
+    const o = document.createElement('option');
+    o.value = p.name;
+    o.label = (p.ref ? '['+p.ref+'] ' : '') + p.category + ' — ' + fmt(p.prix_ht) + ' HT';
+    dl.appendChild(o);
+  });
+}
+
+function onProductSearch(val){
+  if(!val) { selectedProduct=null; hideProductInfo(); return; }
+  const v = val.toLowerCase();
+  const p = CATALOG.find(function(x){
+    return x.name.toLowerCase() === v || (x.ref && x.ref === v);
+  });
+  if(!p){
+    const partial = CATALOG.find(function(x){ return x.name.toLowerCase().includes(v) || (x.ref && x.ref.includes(v)) || x.category.toLowerCase().includes(v); });
+    if(partial && partial.name.toLowerCase().startsWith(v)){selectProduct(partial);return;}
+    selectedProduct=null; hideProductInfo(); return;
+  }
+  selectProduct(p);
+}
+
+function selectProduct(p){
+  selectedProduct = p;
+  document.getElementById('pf-hdht').value = p.hdht;
+  document.getElementById('pf-qty').value = p.pcb;
+  updateQtyHint();
+  const info = document.getElementById('pf-product-info');
+  info.className = 'product-info';
+  info.innerHTML = '<span class="pi-cat">'+esc(p.category)+'</span> '+
+    '<span class="pi-name">'+esc(p.name)+'</span> — '+
+    (p.ref ? 'R\u00e9f: '+esc(p.ref)+' — ' : '')+
+    (p.vol ? p.vol+'cl — ' : '')+
+    (p.tav ? p.tav+'% — ' : '')+
+    'PCB: '+p.pcb+' — HDHT: '+fmt(p.hdht)+' — HT: '+fmt(p.prix_ht)+' — PVC: '+fmt(p.pvc_ttc);
+}
+
+function hideProductInfo(){ document.getElementById('pf-product-info').className='hidden'; }
+
+function updateQtyHint(){
+  if(!selectedProduct) return;
+  const qty = parseInt(document.getElementById('pf-qty').value)||0;
+  const pcb = selectedProduct.pcb;
+  const hint = document.getElementById('pf-qty-hint');
+  if(qty % pcb !== 0){
+    const next = Math.ceil(qty/pcb)*pcb;
+    hint.innerHTML = '\u26a0\ufe0f PCB = '+pcb+'. Quantit\u00e9 sugg\u00e9r\u00e9e : '+next;
+    hint.style.color = 'var(--red)';
+  } else {
+    hint.innerHTML = '\u2713 '+qty+' bouteilles = '+(qty/pcb)+' colis de '+pcb;
+    hint.style.color = 'var(--green)';
+  }
+}
+
+function addLine(){
+  if(!selectedProduct){alert('S\u00e9lectionnez un produit.');return;}
+  const qty = parseInt(document.getElementById('pf-qty').value)||0;
+  if(qty<1){alert('Quantit\u00e9 invalide.');return;}
+  const hdht = parseFloat(document.getElementById('pf-hdht').value)||0;
+  const remise = parseFloat(document.getElementById('pf-remise').value)||0;
+  
+  // Check duplicate
+  if(lines.some(function(l){return l.name===selectedProduct.name})){
+    if(!confirm('Ce produit est d\u00e9j\u00e0 dans le bon. Ajouter quand m\u00eame ?')) return;
+  }
+  
+  const hdht_net = hdht * (1 - remise/100);
+  const droits_unit = selectedProduct.droits + selectedProduct.css;
+  const ht_unit = hdht_net + droits_unit;
+  
+  lines.push({
+    ref: selectedProduct.ref,
+    name: selectedProduct.name,
+    category: selectedProduct.category,
+    vol: selectedProduct.vol,
+    pcb: selectedProduct.pcb,
+    qty: qty,
+    hdht: hdht,
+    remise: remise,
+    hdht_net: Math.round(hdht_net*100)/100,
+    droits: droits_unit,
+    ht_unit: Math.round(ht_unit*100)/100,
+    total_ht: Math.round(ht_unit*qty*100)/100,
+    total_hdht: Math.round(hdht_net*qty*100)/100
+  });
+  
+  renderLines();
+  // Reset
+  document.getElementById('pf-search').value='';
+  document.getElementById('pf-remise').value='0';
+  selectedProduct=null;
+  hideProductInfo();
+  document.getElementById('pf-qty-hint').innerHTML='';
+}
+
+function removeLine(i){ lines.splice(i,1); renderLines(); }
+function clearLines(){ if(lines.length && confirm('Vider le bon ?')){ lines=[]; renderLines(); }}
+
+function renderLines(){
+  const tb = document.getElementById('pf-lines');
+  const tf = document.getElementById('pf-tfoot');
+  const empty = document.getElementById('pf-empty');
+  const summary = document.getElementById('pf-summary');
+  
+  if(!lines.length){
+    tb.innerHTML=''; tf.innerHTML='';
+    empty.style.display='block'; summary.style.display='none';
+    return;
+  }
+  empty.style.display='none'; summary.style.display='grid';
+  
+  let totHDHT=0, totDroits=0, totHT=0, totQty=0;
+  
+  tb.innerHTML = lines.map(function(l,i){
+    totHDHT += l.total_hdht;
+    totDroits += l.droits * l.qty;
+    totHT += l.total_ht;
+    totQty += l.qty;
+    return '<tr>'+
+      '<td>'+esc(l.ref)+'</td>'+
+      '<td style="font-weight:600">'+esc(l.name)+'</td>'+
+      '<td><span style="background:var(--cream);padding:1px 6px;border-radius:8px;font-size:11px">'+esc(l.category)+'</span></td>'+
+      '<td>'+esc(l.vol||'')+'</td>'+
+      '<td>'+l.pcb+'</td>'+
+      '<td style="font-weight:700">'+l.qty+'</td>'+
+      '<td>'+fmt(l.hdht)+'</td>'+
+      '<td>'+(l.remise>0?'-'+l.remise+'%':'—')+'</td>'+
+      '<td>'+fmt(l.hdht_net)+'</td>'+
+      '<td>'+fmt(l.droits)+'</td>'+
+      '<td>'+fmt(l.ht_unit)+'</td>'+
+      '<td style="font-weight:700;text-align:right">'+fmt(l.total_ht)+'</td>'+
+      '<td class="no-print"><button class="del-btn" onclick="removeLine('+i+')">&times;</button></td>'+
+    '</tr>';
+  }).join('');
+  
+  const tva = Math.round(totHT * 0.20 * 100)/100;
+  const ttc = Math.round((totHT + tva)*100)/100;
+  
+  tf.innerHTML = '<tr><td colspan="5" style="text-align:right">TOTAUX</td>'+
+    '<td style="font-weight:700">'+totQty+'</td>'+
+    '<td colspan="2"></td><td>'+fmt(totHDHT)+'</td>'+
+    '<td>'+fmt(totDroits)+'</td><td></td>'+
+    '<td style="text-align:right">'+fmt(totHT)+'</td><td class="no-print"></td></tr>';
+  
+  document.getElementById('s-hdht').textContent = fmt(totHDHT);
+  document.getElementById('s-droits').textContent = fmt(Math.round(totDroits*100)/100);
+  document.getElementById('s-ht').textContent = fmt(totHT);
+  document.getElementById('s-ttc').textContent = fmt(ttc);
+}
+
+function fmt(n){ return (n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' \u20ac'; }
+function esc(s){ const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+
+// === PDF EXPORT ===
+function exportPDF(){
+  if(!lines.length){alert('Le bon est vide.');return;}
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF('p','mm','a4');
+  const w = doc.internal.pageSize.getWidth();
+  const copper = [184,115,51];
+  const navy = [44,36,32];
+  const gray = [122,110,99];
+  
+  // Header
+  doc.setFillColor(44,36,32);
+  doc.rect(0,0,w,28,"F");
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(18);
+  doc.setFont('helvetica','bolditalic');
+  doc.text('free',15,16);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(184,115,51);
+  doc.text('SPIRITS',32,16);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.setTextColor(200,200,200);
+  doc.text('DISTRIBUTION',15,23);
+  
+  // Proforma title
+  doc.setTextColor(184,115,51);
+  doc.setFontSize(9);
+  doc.text('PROFORMA', w-15, 12, {align:'right'});
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(10);
+  const pfNum = document.getElementById('pf-numero').value || 'PF-'+new Date().toISOString().slice(0,10);
+  doc.text(pfNum, w-15, 18, {align:'right'});
+  const pfDate = document.getElementById('pf-date').value;
+  doc.setFontSize(8);
+  doc.text(pfDate ? new Date(pfDate).toLocaleDateString('fr-FR') : '', w-15, 23, {align:'right'});
+  
+  let y = 36;
+  
+  // Client info
+  doc.setFillColor(245,240,234);
+  doc.roundedRect(12,y,w-24,28,2,2,'F');
+  doc.setTextColor(...navy);
+  doc.setFontSize(10);
+  doc.setFont('helvetica','bold');
+  const clientName = document.getElementById('pf-client').value || 'Client';
+  doc.text(clientName, 16, y+8);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(...gray);
+  const noClient = document.getElementById('pf-noclient').value;
+  if(noClient) doc.text('N\u00b0 Client: '+noClient, 16, y+14);
+  const adresse = document.getElementById('pf-adresse').value;
+  if(adresse) doc.text(adresse, 16, y+20);
+  const tel = document.getElementById('pf-tel').value;
+  const email = document.getElementById('pf-email').value;
+  let contactLine = [tel,email].filter(Boolean).join(' — ');
+  if(contactLine) doc.text(contactLine, 16, y+25);
+  
+  const agent = document.getElementById('pf-agent').value;
+  doc.text('Agent: '+(agent||''), w-16, y+8, {align:'right'});
+  
+  y += 34;
+  
+  // Table
+  const tableData = lines.map(function(l){
+    return [
+      l.ref||'',
+      l.name,
+      l.category,
+      l.vol||'',
+      l.pcb,
+      l.qty,
+      n2(l.hdht),
+      l.remise>0?'-'+l.remise+'%':'',
+      n2(l.hdht_net),
+      n2(l.droits),
+      n2(l.ht_unit),
+      n2(l.total_ht)
+    ];
+  });
+  
+  let totHDHT=0, totDroits=0, totHT=0, totQty=0;
+  lines.forEach(function(l){ totHDHT+=l.total_hdht; totDroits+=l.droits*l.qty; totHT+=l.total_ht; totQty+=l.qty; });
+  const tva = Math.round(totHT*0.20*100)/100;
+  const ttc = Math.round((totHT+tva)*100)/100;
+  
+  doc.autoTable({
+    startY: y,
+    head: [['Ref','Produit','Cat.','Vol.','PCB','Qte','HDHT','Rem.','HDHT Net','Droits','HT Unit.','Total HT']],
+    body: tableData,
+    foot: [['','TOTAUX','','','',totQty,'','',n2(totHDHT),n2(totDroits),'',n2(totHT)]],
+    styles:{fontSize:7,cellPadding:2,textColor:navy,lineColor:[224,214,204],lineWidth:0.2},
+    headStyles:{fillColor:copper,textColor:[255,255,255],fontStyle:'bold',fontSize:7},
+    footStyles:{fillColor:[245,240,234],textColor:navy,fontStyle:'bold',fontSize:8},
+    alternateRowStyles:{fillColor:[252,249,245]},
+    columnStyles:{
+      0:{cellWidth:10},1:{cellWidth:42},2:{cellWidth:16},3:{cellWidth:10},4:{cellWidth:9},
+      5:{cellWidth:9,halign:'center',fontStyle:'bold'},6:{halign:'right'},7:{halign:'center'},
+      8:{halign:'right'},9:{halign:'right'},10:{halign:'right'},11:{halign:'right',fontStyle:'bold'}
+    },
+    margin:{left:12,right:12}
+  });
+  
+  y = doc.lastAutoTable.finalY + 8;
+  
+  // Totals box
+  const boxW = 70;
+  const boxX = w - 12 - boxW;
+  doc.setFillColor(245,240,234);
+  doc.roundedRect(boxX, y, boxW, 32, 2, 2, 'F');
+  doc.setFontSize(8);
+  doc.setTextColor(...gray);
+  doc.text('Total HT:', boxX+4, y+8);
+  doc.text('TVA (20%):', boxX+4, y+15);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...navy);
+  doc.text(n2(totHT)+' \u20ac', boxX+boxW-4, y+8, {align:'right'});
+  doc.text(n2(tva)+' \u20ac', boxX+boxW-4, y+15, {align:'right'});
+  doc.setDrawColor(...copper);
+  doc.line(boxX+4, y+19, boxX+boxW-4, y+19);
+  doc.setFontSize(11);
+  doc.setTextColor(...copper);
+  doc.text('Total TTC:', boxX+4, y+27);
+  doc.text(n2(ttc)+' \u20ac', boxX+boxW-4, y+27, {align:'right'});
+  
+  // Conditions (left side)
+  doc.setFontSize(7);
+  doc.setTextColor(...gray);
+  doc.setFont('helvetica','normal');
+  const paiement = document.getElementById('pf-paiement');
+  const franco = document.getElementById('pf-franco');
+  const validite = document.getElementById('pf-validite').value;
+  const notes = document.getElementById('pf-notes').value;
+  let cy = y + 4;
+  doc.text('Paiement: ' + paiement.options[paiement.selectedIndex].text, 14, cy); cy+=5;
+  doc.text('Livraison: ' + franco.options[franco.selectedIndex].text, 14, cy); cy+=5;
+  doc.text('Validite: ' + validite, 14, cy); cy+=5;
+  if(notes){ 
+    const noteLines = doc.splitTextToSize('Notes: '+notes, 90);
+    doc.text(noteLines, 14, cy);
+  }
+  
+  // Footer
+  const pageH = doc.internal.pageSize.getHeight();
+  doc.setFillColor(44,36,32);
+  doc.rect(0, pageH-12, w, 12, 'F');
+  doc.setTextColor(184,115,51);
+  doc.setFontSize(7);
+  doc.text('Free Spirits Distribution — 53 rue de Montreuil, 75011 Paris — free-spirits.fr', w/2, pageH-5, {align:'center'});
+  
+  // Save
+  const filename = 'Proforma_'+(clientName.replace(/[^a-zA-Z0-9]/g,'_'))+'_'+pfNum+'.pdf';
+  doc.save(filename);
+}
+
+function n2(v){ return (v||0).toFixed(2); }
+
+function exportCSV(){
+  if(!lines.length){alert('Le bon est vide.');return;}
+  let csv = 'Ref;Produit;Categorie;Vol;PCB;Qte;HDHT Unit;Remise%;HDHT Net;Droits;HT Unit;Total HT\n';
+  lines.forEach(function(l){
+    csv += [l.ref,'"'+l.name+'"',l.category,l.vol,l.pcb,l.qty,n2(l.hdht),l.remise,n2(l.hdht_net),n2(l.droits),n2(l.ht_unit),n2(l.total_ht)].join(';')+'\n';
+  });
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'proforma_export.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
