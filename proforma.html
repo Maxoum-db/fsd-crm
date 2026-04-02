@@ -184,7 +184,7 @@ let selectedProduct = null;
   document.getElementById('pf-date').value = new Date().toISOString().split('T')[0];
   buildDatalist();
   // Try to load CRM token from sessionStorage (shared with CRM)
-  sbToken = sessionStorage.getItem('sb_token');
+  sbToken = localStorage.getItem('sb_token');
   if(sbToken){ loadCRMContacts(); }
   // Close dropdown on click outside
   document.addEventListener('click', function(e){
