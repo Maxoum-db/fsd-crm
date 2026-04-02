@@ -76,7 +76,23 @@ tfoot td{padding:10px 8px;font-weight:800;border-top:2px solid var(--copper);col
 <div class="card">
 <h3>Informations Client</h3>
 <div class="grid3">
-<div class="full" style="position:relative"><label>Rechercher un client CRM</label><input type="text" id="pf-client-search" placeholder="Tapez un nom, une enseigne, une ville..." oninput="searchClients(this.value)" autocomplete="off"><div id="pf-client-dropdown" class="client-dropdown hidden"></div></div>
+<div class="full" style="position:relative">
+<label>Rechercher un client CRM</label>
+<div style="display:flex;gap:8px;align-items:center">
+<input type="text" id="pf-client-search" placeholder="Tapez un nom, une enseigne, une ville..." oninput="searchClients(this.value)" autocomplete="off" style="flex:1">
+<span id="pf-crm-status" style="font-size:11px;white-space:nowrap"></span>
+<button class="btn btn-ghost btn-sm" id="pf-login-btn" onclick="showProformaLogin()" style="display:none">Connexion CRM</button>
+</div>
+<div id="pf-client-dropdown" class="client-dropdown hidden"></div>
+<div id="pf-login-box" class="hidden" style="margin-top:8px;padding:12px;background:var(--cream);border-radius:var(--radius)">
+<div style="display:flex;gap:8px;align-items:flex-end">
+<div style="flex:1"><label>Email</label><input type="email" id="pf-login-email" placeholder="votre@email.com"></div>
+<div style="flex:1"><label>Mot de passe</label><input type="password" id="pf-login-pwd" placeholder="********" onkeydown="if(event.key==='Enter')doProformaLogin()"></div>
+<button class="btn btn-copper btn-sm" onclick="doProformaLogin()">Connexion</button>
+</div>
+<div id="pf-login-msg" class="hint" style="margin-top:4px"></div>
+</div>
+</div>
 <div><label>Nom / Enseigne</label><input type="text" id="pf-client" placeholder="MAISON DUPONT"></div>
 <div><label>N&deg; Client (ID)</label><input type="text" id="pf-noclient" placeholder="ex: 1545"></div>
 <div><label>Date</label><input type="date" id="pf-date"></div>
@@ -100,7 +116,7 @@ tfoot td{padding:10px 8px;font-weight:800;border-top:2px solid var(--copper);col
 <div><label>Quantit&eacute; (bouteilles)</label><input type="number" id="pf-qty" min="1" step="1" value="6" onchange="updateQtyHint()"></div>
 <div><label>Prix HDHT unitaire</label><input type="number" id="pf-hdht" step="0.01" min="0"></div>
 <div><label>Remise %</label><input type="number" id="pf-remise" min="0" max="100" step="0.5" value="0"></div>
-<div style="display:flex;align-items:center;gap:8px;padding-top:18px"><input type="checkbox" id="pf-animation" style="width:auto;accent-color:var(--copper)"><label for="pf-animation" style="text-transform:none;font-weight:600;color:var(--text);margin:0;cursor:pointer">Animation (-25% HDHT sur 1 btl/carton)</label></div>
+<div style="display:flex;align-items:center;gap:8px;padding-top:18px"><input type="checkbox" id="pf-animation" style="width:auto;accent-color:var(--copper)"><label for="pf-animation" style="text-transform:none;font-weight:600;color:var(--text);margin:0;cursor:pointer">Animation (-25% HDHT sur 1 btl)</label></div>
 </div>
 <div id="pf-qty-hint" class="hint"></div>
 <div class="actions">
@@ -183,9 +199,10 @@ let selectedProduct = null;
 (function(){
   document.getElementById('pf-date').value = new Date().toISOString().split('T')[0];
   buildDatalist();
-  // Try to load CRM token from sessionStorage (shared with CRM)
+  // Try to load CRM token from localStorage (shared with CRM)
   sbToken = localStorage.getItem('sb_token');
-  if(sbToken){ loadCRMContacts(); }
+  if(sbToken){ loadCRMContacts(); updateCRMStatus(true); }
+  else { updateCRMStatus(false); }
   // Close dropdown on click outside
   document.addEventListener('click', function(e){
     if(!e.target.closest('#pf-client-search') && !e.target.closest('#pf-client-dropdown')){
@@ -209,7 +226,8 @@ async function loadCRMContacts(){
     }
     crmContacts=all;
     console.log('CRM: '+crmContacts.length+' contacts charg\u00e9s');
-  }catch(e){console.error('CRM load error',e)}
+    updateCRMStatus(true);
+  }catch(e){console.error('CRM load error',e);updateCRMStatus(false)}
 }
 
 function searchClients(val){
@@ -320,7 +338,7 @@ function addLine(){
   const droits_unit = selectedProduct.droits + selectedProduct.css;
 
   // Animation : 1 btl par carton à -25% HDHT
-  const anim_qty = animation ? Math.floor(qty / selectedProduct.pcb) : 0;
+  const anim_qty = animation ? 1 : 0;
   const normal_qty = qty - anim_qty;
   const hdht_anim = Math.round(hdht * 0.75 * 100) / 100;
 
@@ -389,7 +407,7 @@ function renderLines(){
       '<td>'+l.pcb+'</td>'+
       '<td style="font-weight:700">'+l.qty+'</td>'+
       '<td>'+fmt(l.hdht)+'</td>'+
-      '<td>'+(l.animation?'<span style="color:var(--green);font-weight:600">Anim: '+l.anim_qty+' btl -25%</span>':'—')+'</td>'+
+      '<td>'+(l.animation?'<span style="color:var(--green);font-weight:600">Anim: 1 btl -25%</span>':'—')+'</td>'+
       '<td>'+fmt(l.animation ? Math.round((l.hdht*(l.qty-l.anim_qty)+l.hdht_anim*l.anim_qty)/l.qty*100)/100 : l.hdht)+'</td>'+
       '<td>'+fmt(l.droits)+'</td>'+
       '<td>'+fmt(l.ht_unit)+'</td>'+
@@ -493,7 +511,7 @@ function exportPDF(){
       l.pcb,
       l.qty,
       n2(l.hdht),
-      l.animation?l.anim_qty+' btl -25%':'',
+      l.animation?'1 btl -25%':'',
       n2(l.animation ? Math.round((l.hdht*(l.qty-l.anim_qty)+l.hdht_anim*l.anim_qty)/l.qty*100)/100 : l.hdht),
       n2(l.droits),
       n2(l.ht_unit),
@@ -635,11 +653,51 @@ async function saveToCA(){
   }
 }
 
+function updateCRMStatus(connected){
+  const status=document.getElementById('pf-crm-status');
+  const loginBtn=document.getElementById('pf-login-btn');
+  if(connected){
+    status.innerHTML='\u2713 <span style="color:var(--green)">CRM connect\u00e9 ('+crmContacts.length+' clients)</span>';
+    loginBtn.style.display='none';
+    document.getElementById('pf-login-box').className='hidden';
+  } else {
+    status.innerHTML='<span style="color:var(--red)">\u2717 Non connect\u00e9</span>';
+    loginBtn.style.display='';
+  }
+}
+function showProformaLogin(){
+  const box=document.getElementById('pf-login-box');
+  box.className=box.className==='hidden'?'':'hidden';
+}
+async function doProformaLogin(){
+  const email=document.getElementById('pf-login-email').value.trim();
+  const pwd=document.getElementById('pf-login-pwd').value;
+  const msg=document.getElementById('pf-login-msg');
+  if(!email||!pwd){msg.textContent='Renseignez email et mot de passe.';msg.style.color='var(--red)';return;}
+  msg.textContent='Connexion...';msg.style.color='var(--text-light)';
+  try{
+    const res=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{
+      method:'POST',
+      headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({email:email,password:pwd})
+    });
+    const data=await res.json();
+    if(!res.ok){msg.textContent=data.error_description||data.msg||'Erreur de connexion';msg.style.color='var(--red)';return;}
+    sbToken=data.access_token;
+    localStorage.setItem('sb_token',sbToken);
+    msg.textContent='\u2713 Connect\u00e9 !';msg.style.color='var(--green)';
+    await loadCRMContacts();
+    updateCRMStatus(true);
+  }catch(e){
+    msg.textContent='Erreur r\u00e9seau : '+e.message;msg.style.color='var(--red)';
+  }
+}
+
 function exportCSV(){
   if(!lines.length){alert('Le bon est vide.');return;}
   let csv = 'Ref;Produit;Categorie;Vol;PCB;Qte;HDHT Unit;Animation;HDHT Net;Droits;HT Unit;Total HT\n';
   lines.forEach(function(l){
-    csv += [l.ref,'"'+l.name+'"',l.category,l.vol,l.pcb,l.qty,n2(l.hdht),l.animation?l.anim_qty+' btl -25%':'',n2(l.hdht_net),n2(l.droits),n2(l.ht_unit),n2(l.total_ht)].join(';')+'\n';
+    csv += [l.ref,'"'+l.name+'"',l.category,l.vol,l.pcb,l.qty,n2(l.hdht),l.animation?'1 btl -25%':'',n2(l.hdht_net),n2(l.droits),n2(l.ht_unit),n2(l.total_ht)].join(';')+'\n';
   });
   const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const a = document.createElement('a');
