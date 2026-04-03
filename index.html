@@ -300,6 +300,7 @@ input,select,textarea{font-size:16px!important}
 <div class="nav-tab active" onclick="switchTab('crm')">Clients</div>
 <div class="nav-tab" onclick="switchTab('tour')">Tourn&eacute;es</div>
 <div class="nav-tab" id="nav-ca" onclick="switchTab('ca')">Chiffre d'Affaires</div>
+<div class="nav-tab hidden-tab" id="nav-catalog" onclick="switchTab('catalog')">Catalogue</div>
 <div class="nav-tab hidden-tab" id="nav-admin" onclick="switchTab('admin')">Admin</div>
 <a class="nav-tab" href="proforma.html" style="text-decoration:none;color:inherit" title="&Eacute;diteur de Proforma">Proforma</a>
 </div>
@@ -434,7 +435,23 @@ input,select,textarea{font-size:16px!important}
 </div>
 </div>
 </div>
-</div><!-- /tab-ca -->  
+<!-- Proformas Section (admin only) -->
+<div id="pfo-section" style="display:none;margin-top:24px">
+<h2 style="font-size:18px;font-weight:800;color:var(--navy);margin-bottom:12px">Proformas agents</h2>
+<div class="toolbar">
+<select class="sel" id="pfo-agent-filter" onchange="renderPFO()"><option value="">Tous les agents</option></select>
+<select class="sel" id="pfo-statut-filter" onchange="renderPFO()"><option value="">Tous statuts</option><option value="PROFORMA">En attente</option><option value="VALIDEE">Valid&eacute;e</option></select>
+</div>
+<div class="tbl-wrap">
+<table>
+<thead><tr>
+<th>N&deg; PFO</th><th>Date</th><th>Agent</th><th>Client</th><th>HT &euro;</th><th>TTC &euro;</th><th>Btl</th><th>Statut</th><th style="width:120px">Actions</th>
+</tr></thead>
+<tbody id="pfo-tbody"></tbody>
+</table>
+</div>
+</div>
+</div><!-- /tab-ca -->
 <!-- Quick Edit Modal -->
 <div class="qe-overlay" id="qe-ov" onclick="closeQE(event)">
 <div class="qe-modal" onclick="event.stopPropagation()">
@@ -467,6 +484,27 @@ input,select,textarea{font-size:16px!important}
 </div>
 </div>
 
+<!-- CATALOGUE TAB (admin) -->
+<div class="tab-content" id="tab-catalog">
+<div class="ca-header">
+<h2>Catalogue Produits</h2>
+<div class="ca-filters">
+<select class="sel" id="cat-filter-cat" onchange="renderCatalog()"><option value="">Toutes cat&eacute;gories</option></select>
+<select class="sel" id="cat-filter-dispo" onchange="renderCatalog()"><option value="">Tous statuts</option><option value="DISPONIBLE">Disponible</option><option value="INDISPONIBLE">Indisponible</option><option value="RUPTURE">Rupture d&eacute;finitive</option></select>
+<input type="text" class="search" id="cat-search" placeholder="Rechercher un produit..." oninput="renderCatalog()">
+</div>
+</div>
+<div class="info-bar"><span id="cat-count"></span></div>
+<div class="tbl-wrap">
+<table>
+<thead><tr>
+<th>R&eacute;f</th><th>Produit</th><th>Cat&eacute;gorie</th><th>Vol.</th><th>PCB</th><th>HDHT</th><th>HT</th><th>PVC TTC</th><th style="width:150px">Disponibilit&eacute;</th>
+</tr></thead>
+<tbody id="cat-tbody"></tbody>
+</table>
+</div>
+</div>
+
 <!-- DETAIL PANEL -->
 <div class="overlay" id="ov" onclick="closeP()"></div>
 <div class="panel" id="pn">
@@ -475,6 +513,8 @@ input,select,textarea{font-size:16px!important}
 <div class="pan-body" id="db"></div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 let D=[]
 let currentAgent='',currentRole='',currentAgentCodes=[],currentDisplayName='';
@@ -487,7 +527,7 @@ const PS=50;let F=[],cp=1,sc='score',sd=-1,ac=new Set();
 const CM={TOP:{l:'Top',c:'bdg-top',cc:'c-top'},ACTIF:{l:'Actif',c:'bdg-act',cc:'c-act'},CLIENT:{l:'Client',c:'bdg-act',cc:'c-act'},PROSPECT:{l:'Prospect',c:'bdg-pro',cc:'c-pro'},AGENT:{l:'Agent',c:'bdg-age',cc:'c-age'},INACTIF:{l:'Inactif',c:'bdg-ina',cc:'c-ina'}};
 const DCOL=['#b87333','#6b8f5e','#d4a054','#8b6b8a','#c45c5c'];
 
-function switchTab(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');const tabMap={crm:0,tour:1,ca:2,admin:3};const tabs=document.querySelectorAll('.nav-tab[onclick]');if(tabMap[t]!==undefined&&tabs[tabMap[t]])tabs[tabMap[t]].classList.add('active');if(t==='tour'){initWeekSelector();initBaseSelector()}if(t==='ca'){renderCA()}if(t==='admin'){loadProfiles()}}
+function switchTab(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');const tabMap={crm:0,tour:1,ca:2,catalog:3,admin:4};const tabs=document.querySelectorAll('.nav-tab[onclick]');if(tabMap[t]!==undefined&&tabs[tabMap[t]])tabs[tabMap[t]].classList.add('active');if(t==='tour'){initWeekSelector();initBaseSelector()}if(t==='ca'){renderCA();loadPFO()}if(t==='catalog'){loadCatalog()}if(t==='admin'){loadProfiles()}}
 
 function init(){const cn={};D.forEach(c=>{const k=c.classif;cn[k]=(cn[k]||0)+1});const cc=document.getElementById('chs');
 Object.keys(CM).forEach(k=>{if(!cn[k])return;const ch=document.createElement('span');ch.className='chip '+(CM[k].cc||'');ch.dataset.c=k;ch.innerHTML=CM[k].l+' <span style="opacity:.6">'+(cn[k]||0)+'</span>';ch.onclick=()=>{if(ac.has(k)){ac.delete(k);ch.classList.remove('on')}else{ac.add(k);ch.classList.add('on')}af()};cc.appendChild(ch)});
@@ -508,6 +548,7 @@ if(isAdminRole()){document.getElementById('nav-badge').textContent='Admin — '+
 else if(currentRole==='manager'){document.getElementById('nav-badge').textContent='Manager — '+currentAgent}
 else{document.getElementById('nav-badge').textContent='Secteur '+currentAgent}
 document.getElementById('nav-ca').classList.toggle('hidden-tab',!isAdminRole());
+document.getElementById('nav-catalog').classList.toggle('hidden-tab',!isAdminRole());
 document.getElementById('nav-admin').classList.toggle('hidden-tab',!isAdminRole());
 document.getElementById('fa-wrap').style.display=canSeeAll()?'':'none';
 document.getElementById('th-ca').style.display=canSeeAll()?'':'none';
@@ -1476,6 +1517,7 @@ const clientF=document.getElementById('ca-client-filter').value;
 const q=(document.getElementById('ca-search').value||'').toLowerCase();
 const now=new Date();
 caFiltered=CA_DATA.filter(r=>{
+if(r.statut==='PROFORMA')return false;
 const d=parseCADate(r.date);
 if(period==='month'&&(d.getMonth()!==now.getMonth()||d.getFullYear()!==now.getFullYear()))return false;
 if(period==='quarter'){const cq=Math.floor(now.getMonth()/3),rq=Math.floor(d.getMonth()/3);if(rq!==cq||d.getFullYear()!==now.getFullYear())return false}
@@ -1828,6 +1870,201 @@ af();
 errEl.textContent=e.message;
 btn.disabled=false;btn.textContent='Connexion';
 }
+}
+
+// ========= CATALOGUE SECTION (admin) =========
+let catalogData=[];
+let catInitDone=false;
+
+async function loadCatalog(){
+if(!isAdminRole())return;
+try{
+const res=await fetch(SUPABASE_URL+'/rest/v1/produits?select=*&order=category,name',{
+headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+supabaseToken}
+});
+if(!res.ok){console.error('Catalog load error:',res.status);return}
+catalogData=await res.json();
+if(!catInitDone){
+var cats=new Set();catalogData.forEach(p=>{if(p.category)cats.add(p.category)});
+var sel=document.getElementById('cat-filter-cat');
+sel.innerHTML='<option value="">Toutes catégories</option>';
+[...cats].sort().forEach(c=>{sel.innerHTML+='<option value="'+esc(c)+'">'+esc(c)+'</option>'});
+catInitDone=true;
+}
+renderCatalog();
+}catch(e){console.error('Catalog fetch error:',e)}
+}
+
+function renderCatalog(){
+var catF=document.getElementById('cat-filter-cat').value;
+var dispoF=document.getElementById('cat-filter-dispo').value;
+var q=(document.getElementById('cat-search').value||'').toLowerCase();
+var filtered=catalogData.filter(function(p){
+if(catF&&p.category!==catF)return false;
+if(dispoF&&p.dispo!==dispoF)return false;
+if(q&&!p.name.toLowerCase().includes(q)&&!(p.ref||'').toLowerCase().includes(q)&&!p.category.toLowerCase().includes(q))return false;
+return true;
+});
+document.getElementById('cat-count').textContent=filtered.length+' produit(s) sur '+catalogData.length;
+var tb=document.getElementById('cat-tbody');
+if(!filtered.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--gray-40);padding:20px">Aucun produit</td></tr>';return}
+tb.innerHTML=filtered.map(function(p){
+var dispoColor=p.dispo==='DISPONIBLE'?'var(--green)':p.dispo==='INDISPONIBLE'?'var(--orange)':'var(--red)';
+return '<tr>'+
+'<td>'+esc(p.ref||'-')+'</td>'+
+'<td><strong>'+esc(p.name)+'</strong></td>'+
+'<td>'+esc(p.category)+'</td>'+
+'<td>'+(p.vol||'-')+'</td>'+
+'<td>'+p.pcb+'</td>'+
+'<td>'+((p.hdht||0).toFixed(2))+'</td>'+
+'<td>'+((p.prix_ht||0).toFixed(2))+'</td>'+
+'<td>'+((p.pvc_ttc||0).toFixed(2))+'</td>'+
+'<td><select onchange="updateProduitDispo('+p.id+',this.value)" style="padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;color:'+dispoColor+';border:1px solid '+dispoColor+'">'+
+'<option value="DISPONIBLE"'+(p.dispo==='DISPONIBLE'?' selected':'')+' style="color:var(--green)">Disponible</option>'+
+'<option value="INDISPONIBLE"'+(p.dispo==='INDISPONIBLE'?' selected':'')+' style="color:var(--orange)">Indisponible</option>'+
+'<option value="RUPTURE"'+(p.dispo==='RUPTURE'?' selected':'')+' style="color:var(--red)">Rupture définitive</option>'+
+'</select></td></tr>';
+}).join('');
+}
+
+async function updateProduitDispo(id,dispo){
+try{
+await fetch(SUPABASE_URL+'/rest/v1/produits?id=eq.'+id,{
+method:'PATCH',
+headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+supabaseToken,'Content-Type':'application/json'},
+body:JSON.stringify({dispo:dispo})
+});
+var p=catalogData.find(x=>x.id===id);if(p)p.dispo=dispo;
+renderCatalog();
+showSaved('Disponibilité mise à jour');
+}catch(e){console.error('Update dispo error:',e);alert('Erreur: '+e.message)}
+}
+
+// ========= PROFORMAS SECTION (admin) =========
+let pfoData=[];
+
+function loadPFO(){
+if(!isAdminRole()){document.getElementById('pfo-section').style.display='none';return}
+document.getElementById('pfo-section').style.display='block';
+fetch(SUPABASE_URL+'/rest/v1/commandes?statut=eq.PROFORMA&select=*&order=id.desc',{
+headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+supabaseToken}
+}).then(r=>r.json()).then(data=>{
+pfoData=data||[];
+// Populate agent filter
+var agents=new Set();pfoData.forEach(p=>{if(p.agent_code)agents.add(p.agent_code)});
+var sel=document.getElementById('pfo-agent-filter');
+var cur=sel.value;sel.innerHTML='<option value="">Tous les agents</option>';
+agents.forEach(a=>{sel.innerHTML+='<option value="'+esc(a)+'">'+esc(a)+'</option>'});
+sel.value=cur;
+renderPFO();
+}).catch(e=>{console.error('loadPFO error',e)});
+}
+
+function renderPFO(){
+var agentF=document.getElementById('pfo-agent-filter').value;
+var statutF=document.getElementById('pfo-statut-filter').value;
+var filtered=pfoData.filter(p=>{
+if(agentF&&p.agent_code!==agentF)return false;
+if(statutF&&p.statut!==statutF)return false;
+return true;
+});
+var tb=document.getElementById('pfo-tbody');
+if(!filtered.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--gray-40);padding:20px">Aucune proforma</td></tr>';return}
+tb.innerHTML=filtered.map(function(p){
+var statutBdg=p.statut==='VALIDEE'?'<span class="bdg bdg-top">Validée</span>':'<span class="bdg bdg-pro">En attente</span>';
+return '<tr>'+
+'<td><strong>'+esc(p.commande||'-')+'</strong></td>'+
+'<td>'+esc(p.date||'-')+'</td>'+
+'<td>'+esc(p.agent_code||'-')+'</td>'+
+'<td>'+esc(p.client||'-')+'</td>'+
+'<td style="text-align:right">'+(p.ht?p.ht.toLocaleString('fr-FR',{minimumFractionDigits:2}):'-')+'</td>'+
+'<td style="text-align:right;font-weight:700">'+(p.ttc?p.ttc.toLocaleString('fr-FR',{minimumFractionDigits:2}):'-')+'</td>'+
+'<td style="text-align:center">'+(p.bouteilles||0)+'</td>'+
+'<td>'+statutBdg+'</td>'+
+'<td><button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="downloadPFO('+p.id+')">PDF</button> '+
+(p.statut!=='VALIDEE'?'<button class="btn btn-blue" style="padding:4px 8px;font-size:11px" onclick="validatePFO('+p.id+')">Valider</button>':'')+'</td></tr>';
+}).join('');
+}
+
+function downloadPFO(id){
+var p=pfoData.find(x=>x.id===id);if(!p)return;
+var lignes=[];try{lignes=typeof p.lignes==='string'?JSON.parse(p.lignes):p.lignes||[]}catch(e){lignes=[]}
+var {jsPDF}=window.jspdf;
+var doc=new jsPDF('p','mm','a4');
+var w=doc.internal.pageSize.getWidth();
+var copper=[184,115,51],navy=[44,36,32],gray=[122,110,99];
+// Header
+doc.setFillColor(44,36,32);doc.rect(0,0,w,28,'F');
+doc.setTextColor(255,255,255);doc.setFontSize(18);doc.setFont('helvetica','bolditalic');doc.text('free',15,16);
+doc.setFont('helvetica','bold');doc.setTextColor(184,115,51);doc.text('SPIRITS',32,16);
+doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(200,200,200);doc.text('DISTRIBUTION',15,23);
+doc.setTextColor(184,115,51);doc.setFontSize(9);doc.text('PROFORMA',w-15,12,{align:'right'});
+doc.setTextColor(255,255,255);doc.setFontSize(10);doc.text(p.commande||'',w-15,18,{align:'right'});
+doc.setFontSize(8);doc.text(p.date||'',w-15,23,{align:'right'});
+var y=36;
+// Client info
+doc.setFillColor(245,240,234);doc.roundedRect(12,y,w-24,28,2,2,'F');
+doc.setTextColor(...navy);doc.setFontSize(10);doc.setFont('helvetica','bold');
+doc.text(p.client||'Client',16,y+8);
+doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...gray);
+if(p.no_client)doc.text('N° Client: '+p.no_client,16,y+14);
+var adr=[p.client_adresse,[p.client_cp,p.client_ville].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+if(adr)doc.text(adr,16,y+20);
+var cLine=[p.client_tel,p.client_email].filter(Boolean).join(' — ');
+if(cLine)doc.text(cLine,16,y+25);
+doc.text('Agent: '+(p.agent_code||''),w-16,y+8,{align:'right'});
+y+=34;
+// Table
+if(lignes.length){
+var n2=function(v){return(v||0).toFixed(2)};
+var tableData=lignes.map(function(l){return[l.ref||'',l.name||l.nom||'',l.category||'',l.vol||'',l.pcb||'',l.qty||0,n2(l.hdht),l.animation?'1 btl -25%':'',n2(l.ht_unit),n2(l.droits),n2(l.total_ht)]});
+doc.autoTable({startY:y,
+head:[['Ref','Produit','Cat.','Vol.','PCB','Qté','HDHT','Anim.','HT Unit','Droits','Total HT']],
+body:tableData,
+styles:{fontSize:7,cellPadding:2,textColor:navy,lineColor:[224,214,204],lineWidth:0.2},
+headStyles:{fillColor:copper,textColor:[255,255,255],fontStyle:'bold',fontSize:7},
+alternateRowStyles:{fillColor:[252,249,245]},
+margin:{left:12,right:12}});
+y=doc.lastAutoTable.finalY+8;
+}
+// Totals
+var boxW=70,boxX=w-12-boxW;
+doc.setFillColor(245,240,234);doc.roundedRect(boxX,y,boxW,32,2,2,'F');
+doc.setFontSize(8);doc.setTextColor(...gray);
+doc.text('Total HT:',boxX+4,y+8);doc.text('TVA (20%):',boxX+4,y+15);
+doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...navy);
+doc.text(n2(p.ht)+' €',boxX+boxW-4,y+8,{align:'right'});
+doc.text(n2(p.tva)+' €',boxX+boxW-4,y+15,{align:'right'});
+doc.setDrawColor(...copper);doc.line(boxX+4,y+19,boxX+boxW-4,y+19);
+doc.setFontSize(11);doc.setTextColor(...copper);
+doc.text('Total TTC:',boxX+4,y+27);doc.text(n2(p.ttc)+' €',boxX+boxW-4,y+27,{align:'right'});
+function n2(v){return(v||0).toFixed(2)}
+// Conditions
+doc.setFontSize(7);doc.setTextColor(...gray);doc.setFont('helvetica','normal');
+var cy=y+4;
+if(p.paiement){doc.text('Paiement: '+p.paiement,14,cy);cy+=5}
+if(p.franco){doc.text('Livraison: '+p.franco,14,cy);cy+=5}
+if(p.notes){doc.text(doc.splitTextToSize('Notes: '+p.notes,90),14,cy)}
+// Footer
+doc.setFontSize(9);doc.setFont('helvetica','bolditalic');doc.setTextColor(184,115,51);
+doc.text('Proforma informative — ne constitue pas une facture',w/2,doc.internal.pageSize.getHeight()-18,{align:'center'});
+var pageH=doc.internal.pageSize.getHeight();
+doc.setFillColor(44,36,32);doc.rect(0,pageH-12,w,12,'F');
+doc.setTextColor(184,115,51);doc.setFontSize(7);doc.setFont('helvetica','normal');
+doc.text('Free Spirits Distribution — 53 rue de Montreuil, 75011 Paris — free-spirits.fr',w/2,pageH-5,{align:'center'});
+doc.save('Proforma_'+(p.client||'').replace(/[^a-zA-Z0-9]/g,'_')+'_'+(p.commande||'')+'.pdf');
+}
+
+async function validatePFO(id){
+if(!confirm('Valider cette proforma et la passer en commande ?'))return;
+try{
+await fetch(SUPABASE_URL+'/rest/v1/commandes?id=eq.'+id,{
+method:'PATCH',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+supabaseToken,'Content-Type':'application/json'},
+body:JSON.stringify({statut:'VALIDEE'})
+});
+showSaved('Proforma validée');
+loadPFO();renderCA();
+}catch(e){alert('Erreur: '+e.message)}
 }
 
 // ========= ADMIN PANEL =========
