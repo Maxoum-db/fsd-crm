@@ -237,7 +237,7 @@ async function loadCRMContacts(){
   try{
     let all=[];let offset=0;
     while(true){
-      const res=await fetch(SUPABASE_URL+'/rest/v1/contacts?select=id,nom,enseigne,adresse,cp,ville,departement,tel,port,email,agent,classif&order=nom.asc&offset='+offset+'&limit=1000',{
+      const res=await fetch(SUPABASE_URL+'/rest/v1/contacts?select=id,nom,contact,adresse,cp,ville,dept,tel,port,email,agent,classif&order=nom.asc&offset='+offset+'&limit=1000',{
         headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sbToken}
       });
       if(!res.ok){
@@ -267,7 +267,7 @@ function searchClients(val){
   const v=val.toLowerCase();
   const results=crmContacts.filter(function(c){
     return (c.nom&&c.nom.toLowerCase().includes(v))||
-           (c.enseigne&&c.enseigne.toLowerCase().includes(v))||
+           (c.contact&&c.contact.toLowerCase().includes(v))||
            (c.ville&&c.ville.toLowerCase().includes(v))||
            (c.email&&c.email.toLowerCase().includes(v));
   }).slice(0,15);
@@ -275,8 +275,8 @@ function searchClients(val){
   dd.className='client-dropdown';
   dd.innerHTML=results.map(function(c,i){
     return '<div class="client-item" onclick="selectClient('+i+',this)" data-idx="'+i+'">'+
-      '<div><span class="ci-name">'+(c.enseigne||c.nom||'')+'</span><br>'+
-      '<span class="ci-details">'+(c.ville||'')+' '+(c.departement||'')+' — '+(c.email||'')+'</span></div>'+
+      '<div><span class="ci-name">'+(c.contact||c.nom||'')+'</span><br>'+
+      '<span class="ci-details">'+(c.ville||'')+' '+(c.dept||'')+' — '+(c.email||'')+'</span></div>'+
       '<span class="ci-badge">'+(c.agent||'')+'</span></div>';
   }).join('');
   dd._results=results;
@@ -286,14 +286,14 @@ function selectClient(idx,el){
   const dd=document.getElementById('pf-client-dropdown');
   const c=dd._results[idx];
   if(!c)return;
-  document.getElementById('pf-client').value=c.enseigne||c.nom||'';
+  document.getElementById('pf-client').value=c.contact||c.nom||'';
   document.getElementById('pf-noclient').value=c.id||'';
   document.getElementById('pf-adresse').value=c.adresse||'';
   document.getElementById('pf-ville').value=c.ville||'';
   document.getElementById('pf-cp').value=c.cp||'';
   document.getElementById('pf-tel').value=c.port||c.tel||'';
   document.getElementById('pf-email').value=c.email||'';
-  document.getElementById('pf-client-search').value=c.enseigne||c.nom||'';
+  document.getElementById('pf-client-search').value=c.contact||c.nom||'';
   dd.className='client-dropdown hidden';
 }
 
