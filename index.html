@@ -492,16 +492,44 @@ input,select,textarea{font-size:16px!important}
 <select class="sel" id="cat-filter-cat" onchange="renderCatalog()"><option value="">Toutes cat&eacute;gories</option></select>
 <select class="sel" id="cat-filter-dispo" onchange="renderCatalog()"><option value="">Tous statuts</option><option value="DISPONIBLE">Disponible</option><option value="INDISPONIBLE">Indisponible</option><option value="RUPTURE">Rupture d&eacute;finitive</option></select>
 <input type="text" class="search" id="cat-search" placeholder="Rechercher un produit..." oninput="renderCatalog()">
+<button class="btn btn-blue" onclick="openCatEdit(null)">&#10010; Ajouter un produit</button>
 </div>
 </div>
 <div class="info-bar"><span id="cat-count"></span></div>
 <div class="tbl-wrap">
 <table>
 <thead><tr>
-<th>R&eacute;f</th><th>Produit</th><th>Cat&eacute;gorie</th><th>Vol.</th><th>PCB</th><th>HDHT</th><th>HT</th><th>PVC TTC</th><th style="width:150px">Disponibilit&eacute;</th>
+<th>R&eacute;f</th><th>Produit</th><th>Cat&eacute;gorie</th><th>Classif.</th><th>Vol.</th><th>TAV%</th><th>PCB</th><th>HDHT</th><th>Droits</th><th>HT</th><th>Coef</th><th>PVC TTC</th><th style="width:130px">Dispo</th><th style="width:60px"></th>
 </tr></thead>
 <tbody id="cat-tbody"></tbody>
 </table>
+</div>
+<!-- Catalog Edit Modal -->
+<div class="ca-add-modal-overlay" id="cat-edit-ov" onclick="closeCatEdit(event)">
+<div class="ca-add-modal" onclick="event.stopPropagation()">
+<div class="ca-add-head"><h3 id="cat-edit-title">Ajouter un produit</h3><button class="ca-add-close" onclick="closeCatEdit()">&times;</button></div>
+<div class="ca-add-body">
+<div class="ca-add-field"><label>R&eacute;f&eacute;rence</label><input type="text" id="ce-ref" placeholder="ex: WH001"></div>
+<div class="ca-add-field full"><label>Nom du produit</label><input type="text" id="ce-name" placeholder="ex: LAGAVULIN 16 ANS"></div>
+<div class="ca-add-field"><label>Cat&eacute;gorie</label><input type="text" id="ce-category" list="ce-cat-list" placeholder="WHISKY"><datalist id="ce-cat-list"></datalist></div>
+<div class="ca-add-field"><label>Classification</label><input type="text" id="ce-classif" placeholder="ex: SINGLE MALT"></div>
+<div class="ca-add-field"><label>&Eacute;tui</label><input type="text" id="ce-etui" placeholder="ex: OUI"></div>
+<div class="ca-add-field"><label>Volume (cl)</label><input type="text" id="ce-vol" placeholder="70"></div>
+<div class="ca-add-field"><label>TAV (%)</label><input type="number" id="ce-tav" step="0.1" placeholder="43"></div>
+<div class="ca-add-field"><label>PCB</label><input type="number" id="ce-pcb" min="1" placeholder="6"></div>
+<div class="ca-add-field"><label>HDHT (&euro;)</label><input type="number" id="ce-hdht" step="0.01" placeholder="0.00"></div>
+<div class="ca-add-field"><label>Droits (&euro;)</label><input type="number" id="ce-droits" step="0.0001" placeholder="0.00"></div>
+<div class="ca-add-field"><label>CSS (&euro;)</label><input type="number" id="ce-css" step="0.01" placeholder="0.00"></div>
+<div class="ca-add-field"><label>Prix HT (&euro;)</label><input type="number" id="ce-ht" step="0.01" placeholder="0.00"></div>
+<div class="ca-add-field"><label>Coefficient</label><input type="number" id="ce-coef" step="0.01" placeholder="2.00"></div>
+<div class="ca-add-field"><label>PVC TTC (&euro;)</label><input type="number" id="ce-pvc" step="0.01" placeholder="0.00"></div>
+<div class="ca-add-field"><label>Disponibilit&eacute;</label><select id="ce-dispo"><option value="DISPONIBLE">Disponible</option><option value="INDISPONIBLE">Indisponible</option><option value="RUPTURE">Rupture d&eacute;finitive</option></select></div>
+</div>
+<div class="ca-add-footer">
+<button class="btn btn-ghost" onclick="closeCatEdit()">Annuler</button>
+<button class="btn btn-blue" onclick="saveCatEdit()">&#10003; Enregistrer</button>
+</div>
+</div>
 </div>
 </div>
 
@@ -1907,23 +1935,29 @@ return true;
 });
 document.getElementById('cat-count').textContent=filtered.length+' produit(s) sur '+catalogData.length;
 var tb=document.getElementById('cat-tbody');
-if(!filtered.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--gray-40);padding:20px">Aucun produit</td></tr>';return}
+if(!filtered.length){tb.innerHTML='<tr><td colspan="14" style="text-align:center;color:var(--gray-40);padding:20px">Aucun produit</td></tr>';return}
 tb.innerHTML=filtered.map(function(p){
 var dispoColor=p.dispo==='DISPONIBLE'?'var(--green)':p.dispo==='INDISPONIBLE'?'var(--orange)':'var(--red)';
-return '<tr>'+
+return '<tr style="cursor:pointer" ondblclick="openCatEdit('+p.id+')">'+
 '<td>'+esc(p.ref||'-')+'</td>'+
 '<td><strong>'+esc(p.name)+'</strong></td>'+
 '<td>'+esc(p.category)+'</td>'+
+'<td style="font-size:11px">'+esc(p.classif||'-')+'</td>'+
 '<td>'+(p.vol||'-')+'</td>'+
+'<td>'+(p.tav||'-')+'</td>'+
 '<td>'+p.pcb+'</td>'+
 '<td>'+((p.hdht||0).toFixed(2))+'</td>'+
+'<td>'+((p.droits||0).toFixed(4))+'</td>'+
 '<td>'+((p.prix_ht||0).toFixed(2))+'</td>'+
+'<td>'+(p.coef||'-')+'</td>'+
 '<td>'+((p.pvc_ttc||0).toFixed(2))+'</td>'+
-'<td><select onchange="updateProduitDispo('+p.id+',this.value)" style="padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;color:'+dispoColor+';border:1px solid '+dispoColor+'">'+
-'<option value="DISPONIBLE"'+(p.dispo==='DISPONIBLE'?' selected':'')+' style="color:var(--green)">Disponible</option>'+
-'<option value="INDISPONIBLE"'+(p.dispo==='INDISPONIBLE'?' selected':'')+' style="color:var(--orange)">Indisponible</option>'+
-'<option value="RUPTURE"'+(p.dispo==='RUPTURE'?' selected':'')+' style="color:var(--red)">Rupture définitive</option>'+
-'</select></td></tr>';
+'<td><select onchange="event.stopPropagation();updateProduitDispo('+p.id+',this.value)" style="padding:3px 6px;border-radius:6px;font-size:11px;font-weight:600;color:'+dispoColor+';border:1px solid '+dispoColor+'">'+
+'<option value="DISPONIBLE"'+(p.dispo==='DISPONIBLE'?' selected':'')+'>Dispo</option>'+
+'<option value="INDISPONIBLE"'+(p.dispo==='INDISPONIBLE'?' selected':'')+'>Indispo</option>'+
+'<option value="RUPTURE"'+(p.dispo==='RUPTURE'?' selected':'')+'>Rupture</option>'+
+'</select></td>'+
+'<td><button class="btn btn-ghost" style="padding:3px 8px;font-size:11px" onclick="event.stopPropagation();openCatEdit('+p.id+')">&#9998;</button>'+
+'<button class="ca-del-btn" onclick="event.stopPropagation();deleteProduit('+p.id+',\''+esc(p.name).replace(/'/g,'\\\'')+'\')" title="Supprimer">&times;</button></td></tr>';
 }).join('');
 }
 
@@ -1938,6 +1972,92 @@ var p=catalogData.find(x=>x.id===id);if(p)p.dispo=dispo;
 renderCatalog();
 showSaved('Disponibilité mise à jour');
 }catch(e){console.error('Update dispo error:',e);alert('Erreur: '+e.message)}
+}
+
+let catEditId=null;
+function openCatEdit(id){
+catEditId=id;
+var p=id?catalogData.find(x=>x.id===id):null;
+document.getElementById('cat-edit-title').textContent=p?'Modifier: '+p.name:'Ajouter un produit';
+document.getElementById('ce-ref').value=p?p.ref||'':'';
+document.getElementById('ce-name').value=p?p.name||'':'';
+document.getElementById('ce-category').value=p?p.category||'':'';
+document.getElementById('ce-classif').value=p?p.classif||'':'';
+document.getElementById('ce-etui').value=p?p.etui||'':'';
+document.getElementById('ce-vol').value=p?p.vol||'':'';
+document.getElementById('ce-tav').value=p?p.tav||'':'';
+document.getElementById('ce-pcb').value=p?p.pcb||6:6;
+document.getElementById('ce-hdht').value=p?p.hdht||0:0;
+document.getElementById('ce-droits').value=p?p.droits||0:0;
+document.getElementById('ce-css').value=p?p.css||0:0;
+document.getElementById('ce-ht').value=p?p.prix_ht||0:0;
+document.getElementById('ce-coef').value=p?p.coef||0:0;
+document.getElementById('ce-pvc').value=p?p.pvc_ttc||0:0;
+document.getElementById('ce-dispo').value=p?p.dispo||'DISPONIBLE':'DISPONIBLE';
+// Populate category datalist
+var dl=document.getElementById('ce-cat-list');dl.innerHTML='';
+var cats=new Set();catalogData.forEach(x=>{if(x.category)cats.add(x.category)});
+[...cats].sort().forEach(c=>{var o=document.createElement('option');o.value=c;dl.appendChild(o)});
+document.getElementById('cat-edit-ov').classList.add('open');
+}
+
+function closeCatEdit(e){
+if(e&&e.target!==e.currentTarget)return;
+document.getElementById('cat-edit-ov').classList.remove('open');
+catEditId=null;
+}
+
+async function saveCatEdit(){
+var name=document.getElementById('ce-name').value.trim();
+if(!name){alert('Le nom du produit est obligatoire.');return}
+var data={
+ref:document.getElementById('ce-ref').value.trim(),
+name:name,
+category:document.getElementById('ce-category').value.trim(),
+classif:document.getElementById('ce-classif').value.trim(),
+etui:document.getElementById('ce-etui').value.trim(),
+vol:document.getElementById('ce-vol').value.trim(),
+tav:parseFloat(document.getElementById('ce-tav').value)||0,
+pcb:parseInt(document.getElementById('ce-pcb').value)||6,
+hdht:parseFloat(document.getElementById('ce-hdht').value)||0,
+droits:parseFloat(document.getElementById('ce-droits').value)||0,
+css:parseFloat(document.getElementById('ce-css').value)||0,
+prix_ht:parseFloat(document.getElementById('ce-ht').value)||0,
+coef:parseFloat(document.getElementById('ce-coef').value)||0,
+pvc_ttc:parseFloat(document.getElementById('ce-pvc').value)||0,
+dispo:document.getElementById('ce-dispo').value
+};
+try{
+if(catEditId){
+await fetch(SUPABASE_URL+'/rest/v1/produits?id=eq.'+catEditId,{
+method:'PATCH',
+headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+supabaseToken,'Content-Type':'application/json'},
+body:JSON.stringify(data)
+});
+showSaved('Produit modifié');
+}else{
+await fetch(SUPABASE_URL+'/rest/v1/produits',{
+method:'POST',
+headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+supabaseToken,'Content-Type':'application/json','Prefer':'return=minimal'},
+body:JSON.stringify(data)
+});
+showSaved('Produit ajouté');
+}
+closeCatEdit();
+await loadCatalog();
+}catch(e){alert('Erreur: '+e.message)}
+}
+
+async function deleteProduit(id,name){
+if(!confirm('Supprimer définitivement "'+name+'" du catalogue ?'))return;
+try{
+await fetch(SUPABASE_URL+'/rest/v1/produits?id=eq.'+id,{
+method:'DELETE',
+headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+supabaseToken}
+});
+showSaved('Produit supprimé');
+await loadCatalog();
+}catch(e){alert('Erreur: '+e.message)}
 }
 
 // ========= PROFORMAS SECTION (admin) =========
@@ -2180,4 +2300,4 @@ checkSession();
 
 
 </body>
-</html>
+</html>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
