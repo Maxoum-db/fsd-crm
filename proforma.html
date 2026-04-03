@@ -176,7 +176,7 @@ tfoot td{padding:10px 8px;font-weight:800;border-top:2px solid var(--copper);col
 <button class="btn btn-copper" onclick="exportPDF()">&#128196; Générer PDF</button>
 <button class="btn btn-ghost" onclick="window.print()">&#128424; Imprimer</button>
 <button class="btn btn-ghost" onclick="exportCSV()">&#128196; Export CSV</button>
-<button class="btn btn-green" onclick="saveToCA()">&#10004; Enregistrer au CA</button>
+<span id="pf-ca-btn"><button class="btn btn-green" onclick="saveToCA()">&#10004; Enregistrer au CA</button></span>
 </div>
 <div id="pf-save-msg" class="hint" style="margin-top:6px"></div>
 </div>
@@ -191,6 +191,7 @@ const SUPABASE_URL = "https://ajukuwrznhfsfdeejdkl.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqdWt1d3J6bmhmc2ZkZWVqZGtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwOTM4MzgsImV4cCI6MjA5MDY2OTgzOH0.fHCVO12OutfO1PNM97s3jRVjFVPlGLl7wBmZA4gbM7s";
 let sbToken = null;
 let crmContacts = [];
+let userRole = '';
 
 let lines = [];
 let selectedProduct = null;
@@ -214,8 +215,17 @@ let selectedProduct = null;
         sbToken=null;
         updateCRMStatus(false);
       } else {
+        // Fetch user role from profiles
+        try{
+          const uData=await vRes.json();
+          const pRes=await fetch(SUPABASE_URL+'/rest/v1/profiles?id=eq.'+uData.id+'&select=role',{
+            headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sbToken}
+          });
+          if(pRes.ok){const pArr=await pRes.json();if(pArr.length)userRole=pArr[0].role||'agent';}
+        }catch(e){console.warn('Could not fetch role',e)}
         await loadCRMContacts();
         updateCRMStatus(true);
+        updateCAButton();
       }
     }catch(e){
       console.error('Token validation error',e);
@@ -237,7 +247,7 @@ async function loadCRMContacts(){
   try{
     let all=[];let offset=0;
     while(true){
-      const res=await fetch(SUPABASE_URL+'/rest/v1/contacts?select=id,nom,contact,adresse,cp,ville,dept,tel,port,email,agent,classif&order=nom.asc&offset='+offset+'&limit=1000',{
+      const res=await fetch(SUPABASE_URL+'/rest/v1/contacts?select=id,nom,enseigne,adresse,cp,ville,departement,tel,port,email,agent,classif&order=nom.asc&offset='+offset+'&limit=1000',{
         headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sbToken}
       });
       if(!res.ok){
@@ -267,7 +277,7 @@ function searchClients(val){
   const v=val.toLowerCase();
   const results=crmContacts.filter(function(c){
     return (c.nom&&c.nom.toLowerCase().includes(v))||
-           (c.contact&&c.contact.toLowerCase().includes(v))||
+           (c.enseigne&&c.enseigne.toLowerCase().includes(v))||
            (c.ville&&c.ville.toLowerCase().includes(v))||
            (c.email&&c.email.toLowerCase().includes(v));
   }).slice(0,15);
@@ -275,8 +285,8 @@ function searchClients(val){
   dd.className='client-dropdown';
   dd.innerHTML=results.map(function(c,i){
     return '<div class="client-item" onclick="selectClient('+i+',this)" data-idx="'+i+'">'+
-      '<div><span class="ci-name">'+(c.contact||c.nom||'')+'</span><br>'+
-      '<span class="ci-details">'+(c.ville||'')+' '+(c.dept||'')+' — '+(c.email||'')+'</span></div>'+
+      '<div><span class="ci-name">'+(c.enseigne||c.nom||'')+'</span><br>'+
+      '<span class="ci-details">'+(c.ville||'')+' '+(c.departement||'')+' — '+(c.email||'')+'</span></div>'+
       '<span class="ci-badge">'+(c.agent||'')+'</span></div>';
   }).join('');
   dd._results=results;
@@ -286,14 +296,14 @@ function selectClient(idx,el){
   const dd=document.getElementById('pf-client-dropdown');
   const c=dd._results[idx];
   if(!c)return;
-  document.getElementById('pf-client').value=c.contact||c.nom||'';
+  document.getElementById('pf-client').value=c.enseigne||c.nom||'';
   document.getElementById('pf-noclient').value=c.id||'';
   document.getElementById('pf-adresse').value=c.adresse||'';
   document.getElementById('pf-ville').value=c.ville||'';
   document.getElementById('pf-cp').value=c.cp||'';
   document.getElementById('pf-tel').value=c.port||c.tel||'';
   document.getElementById('pf-email').value=c.email||'';
-  document.getElementById('pf-client-search').value=c.contact||c.nom||'';
+  document.getElementById('pf-client-search').value=c.enseigne||c.nom||'';
   dd.className='client-dropdown hidden';
 }
 
@@ -684,6 +694,34 @@ async function saveToCA(){
   }
 }
 
+function updateCAButton(){
+  var container=document.getElementById('pf-ca-btn');
+  if(userRole==='admin'||userRole==='manager'){
+    container.innerHTML='<button class="btn btn-green" onclick="saveToCA()">&#10004; Enregistrer au CA</button>';
+  } else {
+    container.innerHTML='<button class="btn btn-green" onclick="sendToCommande()">&#9993; Envoyer à commande</button>';
+  }
+}
+
+function sendToCommande(){
+  if(!lines.length){alert('Le bon est vide.');return}
+  var pfNum=document.getElementById('pf-numero').value||'PF-'+new Date().toISOString().slice(0,10);
+  var clientName=document.getElementById('pf-client').value||'Client';
+  var pfDate=document.getElementById('pf-date').value||'';
+  var subject='Proforma '+pfNum+' - '+clientName;
+  var body='Bonjour,\n\nVeuillez trouver ci-dessous la proforma '+pfNum+' pour '+clientName+' du '+pfDate+'.\n\n';
+  body+='--- Détail des lignes ---\n';
+  lines.forEach(function(l,i){
+    body+=(i+1)+'. '+l.nom+' — Qté: '+l.qty+' — HT: '+l.total_ht.toFixed(2)+' €\n';
+  });
+  var totHT=0;lines.forEach(function(l){totHT+=l.total_ht});
+  var tva=Math.round(totHT*0.20*100)/100;
+  var ttc=Math.round((totHT+tva)*100)/100;
+  body+='\nTotal HT: '+totHT.toFixed(2)+' €\nTVA 20%: '+tva.toFixed(2)+' €\nTotal TTC: '+ttc.toFixed(2)+' €\n';
+  body+='\nCordialement';
+  window.location.href='mailto:commande@free-spirits.fr?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+}
+
 function updateCRMStatus(connected){
   const status=document.getElementById('pf-crm-status');
   const loginBtn=document.getElementById('pf-login-btn');
@@ -716,9 +754,15 @@ async function doProformaLogin(){
     if(!res.ok){msg.textContent=data.error_description||data.msg||'Erreur de connexion';msg.style.color='var(--red)';return;}
     sbToken=data.access_token;
     localStorage.setItem('sb_token',sbToken);
+    // Fetch role after login
+    try{
+      const uRes=await fetch(SUPABASE_URL+'/auth/v1/user',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sbToken}});
+      if(uRes.ok){const uD=await uRes.json();const pR=await fetch(SUPABASE_URL+'/rest/v1/profiles?id=eq.'+uD.id+'&select=role',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sbToken}});if(pR.ok){const pA=await pR.json();if(pA.length)userRole=pA[0].role||'agent';}}
+    }catch(e){console.warn('Role fetch error',e)}
     msg.textContent='\u2713 Connect\u00e9 !';msg.style.color='var(--green)';
     await loadCRMContacts();
     updateCRMStatus(true);
+    updateCAButton();
   }catch(e){
     msg.textContent='Erreur r\u00e9seau : '+e.message;msg.style.color='var(--red)';
   }
