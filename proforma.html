@@ -212,9 +212,9 @@ async function loadCatalog(){
 // Init
 (async function(){
   document.getElementById('pf-date').value = new Date().toISOString().split('T')[0];
-  await loadCatalog();
-  // Try to load CRM token from localStorage (shared with CRM)
+  // Load CRM token BEFORE catalog so auth headers are available
   sbToken = localStorage.getItem('sb_token');
+  await loadCatalog();
   if(sbToken){
     // Validate token first
     try{
