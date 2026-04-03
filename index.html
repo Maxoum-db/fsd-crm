@@ -492,7 +492,7 @@ input,select,textarea{font-size:16px!important}
 <select class="sel" id="cat-filter-cat" onchange="renderCatalog()"><option value="">Toutes cat&eacute;gories</option></select>
 <select class="sel" id="cat-filter-dispo" onchange="renderCatalog()"><option value="">Tous statuts</option><option value="DISPONIBLE">Disponible</option><option value="INDISPONIBLE">Indisponible</option><option value="RUPTURE">Rupture d&eacute;finitive</option></select>
 <input type="text" class="search" id="cat-search" placeholder="Rechercher un produit..." oninput="renderCatalog()">
-<button class="btn btn-blue" onclick="openCatEdit(null)">&#10010; Ajouter un produit</button>
+<button class="btn btn-blue admin-only" id="btn-cat-add" onclick="openCatEdit(null)">&#10010; Ajouter un produit</button>
 </div>
 </div>
 <div class="info-bar"><span id="cat-count"></span></div>
@@ -576,7 +576,7 @@ if(isAdminRole()){document.getElementById('nav-badge').textContent='Admin — '+
 else if(currentRole==='manager'){document.getElementById('nav-badge').textContent='Manager — '+currentAgent}
 else{document.getElementById('nav-badge').textContent='Secteur '+currentAgent}
 document.getElementById('nav-ca').classList.toggle('hidden-tab',!isAdminRole());
-document.getElementById('nav-catalog').classList.toggle('hidden-tab',!isAdminRole());
+document.getElementById('nav-catalog').classList.toggle('hidden-tab',!canSeeAll());
 document.getElementById('nav-admin').classList.toggle('hidden-tab',!isAdminRole());
 document.getElementById('fa-wrap').style.display=canSeeAll()?'':'none';
 document.getElementById('th-ca').style.display=canSeeAll()?'':'none';
@@ -1905,7 +1905,7 @@ let catalogData=[];
 let catInitDone=false;
 
 async function loadCatalog(){
-if(!isAdminRole())return;
+if(!canSeeAll())return;
 try{
 const res=await fetch(SUPABASE_URL+'/rest/v1/produits?select=*&order=category,name',{
 headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+supabaseToken}
@@ -1920,6 +1920,7 @@ sel.innerHTML='<option value="">Toutes catégories</option>';
 catInitDone=true;
 }
 renderCatalog();
+var addBtn=document.getElementById('btn-cat-add');if(addBtn)addBtn.style.display=canSeeAll()?'':'none';
 }catch(e){console.error('Catalog fetch error:',e)}
 }
 
@@ -1938,7 +1939,7 @@ var tb=document.getElementById('cat-tbody');
 if(!filtered.length){tb.innerHTML='<tr><td colspan="14" style="text-align:center;color:var(--gray-40);padding:20px">Aucun produit</td></tr>';return}
 tb.innerHTML=filtered.map(function(p){
 var dispoColor=p.dispo==='DISPONIBLE'?'var(--green)':p.dispo==='INDISPONIBLE'?'var(--orange)':'var(--red)';
-return '<tr style="cursor:pointer" ondblclick="openCatEdit('+p.id+')">'+
+return '<tr style="cursor:'+(canSeeAll()?'pointer':'default')+'"'+(canSeeAll()?' ondblclick="openCatEdit('+p.id+')"':'')+'>'+
 '<td>'+esc(p.ref||'-')+'</td>'+
 '<td><strong>'+esc(p.name)+'</strong></td>'+
 '<td>'+esc(p.category)+'</td>'+
@@ -1951,13 +1952,13 @@ return '<tr style="cursor:pointer" ondblclick="openCatEdit('+p.id+')">'+
 '<td>'+((p.prix_ht||0).toFixed(2))+'</td>'+
 '<td>'+(p.coef||'-')+'</td>'+
 '<td>'+((p.pvc_ttc||0).toFixed(2))+'</td>'+
-'<td><select onchange="event.stopPropagation();updateProduitDispo('+p.id+',this.value)" style="padding:3px 6px;border-radius:6px;font-size:11px;font-weight:600;color:'+dispoColor+';border:1px solid '+dispoColor+'">'+
+'<td>'+(canSeeAll()?'<select onchange="event.stopPropagation();updateProduitDispo('+p.id+',this.value)" style="padding:3px 6px;border-radius:6px;font-size:11px;font-weight:600;color:'+dispoColor+';border:1px solid '+dispoColor+'">'+
 '<option value="DISPONIBLE"'+(p.dispo==='DISPONIBLE'?' selected':'')+'>Dispo</option>'+
 '<option value="INDISPONIBLE"'+(p.dispo==='INDISPONIBLE'?' selected':'')+'>Indispo</option>'+
 '<option value="RUPTURE"'+(p.dispo==='RUPTURE'?' selected':'')+'>Rupture</option>'+
-'</select></td>'+
-'<td><button class="btn btn-ghost" style="padding:3px 8px;font-size:11px" onclick="event.stopPropagation();openCatEdit('+p.id+')">&#9998;</button>'+
-'<button class="ca-del-btn" onclick="event.stopPropagation();deleteProduit('+p.id+',\''+esc(p.name).replace(/'/g,'\\\'')+'\')" title="Supprimer">&times;</button></td></tr>';
+'</select>':'<span style="padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;color:'+dispoColor+'">'+p.dispo+'</span>')+'</td>'+
+(canSeeAll()?'<td><button class="btn btn-ghost" style="padding:3px 8px;font-size:11px" onclick="event.stopPropagation();openCatEdit('+p.id+')">&#9998;</button>'+
+'<button class="ca-del-btn" onclick="event.stopPropagation();deleteProduit('+p.id+',\''+esc(p.name).replace(/'/g,'\\\'')+'\')" title="Supprimer">&times;</button></td>':'<td></td>')+'</tr>';
 }).join('');
 }
 
