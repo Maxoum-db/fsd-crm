@@ -247,7 +247,7 @@ async function loadCRMContacts(){
   try{
     let all=[];let offset=0;
     while(true){
-      const res=await fetch(SUPABASE_URL+'/rest/v1/contacts?select=id,nom,enseigne,adresse,cp,ville,departement,tel,port,email,agent,classif&order=nom.asc&offset='+offset+'&limit=1000',{
+      const res=await fetch(SUPABASE_URL+'/rest/v1/contacts?select=*&order=nom.asc&offset='+offset+'&limit=1000',{
         headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+sbToken}
       });
       if(!res.ok){
@@ -699,27 +699,39 @@ function updateCAButton(){
   if(userRole==='admin'||userRole==='manager'){
     container.innerHTML='<button class="btn btn-green" onclick="saveToCA()">&#10004; Enregistrer au CA</button>';
   } else {
-    container.innerHTML='<button class="btn btn-green" onclick="sendToCommande()">&#9993; Envoyer à commande</button>';
+    container.innerHTML='<button class="btn btn-green" onclick="sendToCommande()">&#9993; Envoyer la commande</button>';
   }
 }
 
 function sendToCommande(){
   if(!lines.length){alert('Le bon est vide.');return}
+  // 1. Generate and download the PDF
+  exportPDF();
+  // 2. Build mailto with summary
   var pfNum=document.getElementById('pf-numero').value||'PF-'+new Date().toISOString().slice(0,10);
   var clientName=document.getElementById('pf-client').value||'Client';
   var pfDate=document.getElementById('pf-date').value||'';
-  var subject='Proforma '+pfNum+' - '+clientName;
-  var body='Bonjour,\n\nVeuillez trouver ci-dessous la proforma '+pfNum+' pour '+clientName+' du '+pfDate+'.\n\n';
-  body+='--- Détail des lignes ---\n';
-  lines.forEach(function(l,i){
-    body+=(i+1)+'. '+l.nom+' — Qté: '+l.qty+' — HT: '+l.total_ht.toFixed(2)+' €\n';
-  });
+  var agent=document.getElementById('pf-agent').value||'';
   var totHT=0;lines.forEach(function(l){totHT+=l.total_ht});
   var tva=Math.round(totHT*0.20*100)/100;
   var ttc=Math.round((totHT+tva)*100)/100;
-  body+='\nTotal HT: '+totHT.toFixed(2)+' €\nTVA 20%: '+tva.toFixed(2)+' €\nTotal TTC: '+ttc.toFixed(2)+' €\n';
+  var subject='Commande '+pfNum+' - '+clientName;
+  var body='Bonjour,\n\nVeuillez trouver en pièce jointe la proforma '+pfNum+' pour '+clientName+' du '+pfDate+'.\n\n';
+  body+='Récapitulatif :\n';
+  body+='- '+lines.length+' référence(s)\n';
+  body+='- Total HT : '+totHT.toFixed(2)+' €\n';
+  body+='- TVA 20% : '+tva.toFixed(2)+' €\n';
+  body+='- Total TTC : '+ttc.toFixed(2)+' €\n';
+  body+='\nAgent : '+agent+'\n';
   body+='\nCordialement';
-  window.location.href='mailto:commande@free-spirits.fr?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  // Small delay so PDF download triggers first
+  setTimeout(function(){
+    window.location.href='mailto:commande@free-spirits.fr?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  },500);
+  // Show message
+  var msg=document.getElementById('pf-save-msg');
+  msg.style.color='var(--green)';
+  msg.textContent='\u2713 PDF téléchargé — joignez-le au mail qui s\'ouvre et envoyez.';
 }
 
 function updateCRMStatus(connected){
