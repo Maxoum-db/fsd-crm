@@ -580,7 +580,7 @@ h+=panelInput('Source','pf-src',c.src,'text','');
 h+=panelInput('Numero client','pf-nclt',c.n_clt,'text','');
 h+=panelInput('CA','pf-ca',c.ca||0,'number','');
 h+=panelInput('Factures','pf-factures',c.nb_factures||0,'number','');
-if(canSeeAll()){h+=panelInput('Distance Villeneuve','pf-distvda',c.distVDA,'number','');
+if(isAdminRole()){h+=panelInput('Distance Villeneuve','pf-distvda',c.distVDA,'number','');
 h+=panelInput('Distance Herouville','pf-disthsc',c.distHSC,'number','');}
 h+=panelInput('Latitude','pf-lat',c.lat,'number','');
 h+=panelInput('Longitude','pf-lon',c.lon,'number','');
@@ -589,7 +589,7 @@ h+='</div></div>';
 h+='<div class="pan-actions-sticky"><button class="btn btn-ghost" onclick="closeP()">Fermer</button><button class="btn btn-ghost" onclick="'+(panelIsNew?'closeP()':'setPanelEditMode(false)')+'">Annuler</button><button class="btn btn-blue" onclick="savePanelEdit()">'+(panelIsNew?'Ajouter':'Enregistrer')+'</button></div>';
 }else{
 h+='<div class="sec"><h3>Contact</h3>'+rw('Gerant',c.contact)+rw('Tel',c.tel)+rw('Portable',c.port)+rw('Email',c.email?'<a href="mailto:'+c.email+'">'+c.email+'</a>':'')+'</div>';
-h+='<div class="sec"><h3>Localisation</h3>'+rw('Adresse',c.adresse)+rw('CP',c.cp)+rw('Ville',c.ville)+rw('Dept',c.dept)+rw('Region',c.region)+(canSeeAll()?rw('Dist. Villeneuve',c.distVDA<9000?c.distVDA+' km':'-')+rw('Dist. Herouville',c.distHSC<9000?c.distHSC+' km':'-'):'')+'</div>';
+h+='<div class="sec"><h3>Localisation</h3>'+rw('Adresse',c.adresse)+rw('CP',c.cp)+rw('Ville',c.ville)+rw('Dept',c.dept)+rw('Region',c.region)+(isAdminRole()?rw('Dist. Villeneuve',c.distVDA<9000?c.distVDA+' km':'-')+rw('Dist. Herouville',c.distHSC<9000?c.distHSC+' km':'-'):'')+'</div>';
 h+='<div class="sec"><h3>Commercial</h3>'+(canSeeAll()?rw('CA',c.ca>0?c.ca.toLocaleString('fr-FR')+' \u20ac':'-'):'')+rw('Type',c.type)+rw('Priorite',c.prio)+rw('Agent',c.agent)+rw('Commande',c.cmd)+rw('Relance',c.relance)+rw('Source',c.src)+'</div>';
 if(c.comment)h+='<div class="sec"><h3>Notes</h3><div class="note-box">'+esc(c.comment)+'</div></div>';
 h+='<div class="pan-actions-sticky"><button class="btn btn-ghost" onclick="closeP()">Fermer</button><button class="btn btn-blue" onclick="setPanelEditMode(true)">Modifier</button></div>';
